@@ -98,5 +98,10 @@
   "engines": {
     "npm": "please-use-pnpm",
     "pnpm": ">= 1.0.0"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "sortablejs": "patches/sortablejs.patch"
+    }
   }
 }
