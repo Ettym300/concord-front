@@ -17,18 +17,28 @@ const str = (key: string, fallback = "") => {
   return fallback;
 };
 
+const withSlash = (url: string) => {
+  if (!url) return "";
+  return url.endsWith("/") ? url : `${url}/`;
+};
+
+const withoutSlash = (url: string) => url.replace(/\/+$/, "");
+
 export default {
   get SERVER_URL() {
-    const configured = str("VITE_SERVER_URL");
+    const configured = withoutSlash(str("VITE_SERVER_URL"));
     if (import.meta.env.DEV) return configured;
     if (typeof window !== "undefined") return window.location.origin;
     return configured;
   },
   get WS_URL() {
-    return str("VITE_WS_URL");
+    return withoutSlash(str("VITE_WS_URL"));
   },
   get APP_URL() {
-    return str("VITE_APP_URL");
+    const configured = withoutSlash(str("VITE_APP_URL"));
+    if (import.meta.env.DEV) return configured || "http://localhost:3000";
+    if (typeof window !== "undefined") return window.location.origin;
+    return configured;
   },
   get MOBILE_WIDTH() {
     return parseInt(str("VITE_MOBILE_WIDTH", "850"));
@@ -49,7 +59,10 @@ export default {
     return str("VITE_EMOJI_URL");
   },
   get NERIMITY_CDN() {
-    return str("VITE_NERIMITY_CDN");
+    const configured = withSlash(str("VITE_NERIMITY_CDN"));
+    if (import.meta.env.DEV) return configured;
+    if (typeof window !== "undefined") return withSlash(window.location.origin);
+    return configured;
   },
   get OFFICIAL_SERVER() {
     return str("VITE_OFFICIAL_SERVER", "concord");

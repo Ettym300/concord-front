@@ -81,19 +81,23 @@ export default function Avatar(props: Props) {
     if (typeof props.user?.avatarUrl === "string") return webhookAvatarUrl();
     const rawUrl = props.url || generateUrl(serverOrUser(), "avatar");
     if (!rawUrl) return;
-    const url = new URL(rawUrl);
+    try {
+      const url = new URL(rawUrl, window.location.origin);
 
-    if (props.resize) {
-      url.searchParams.set("size", props.resize.toString());
+      if (props.resize) {
+        url.searchParams.set("size", props.resize.toString());
+      }
+
+      if (!rawUrl?.endsWith(".gif") && !rawUrl.endsWith("#a")) return url.href;
+
+      if (!shouldAnimate(hovered()) || !props.animate) {
+        url.searchParams.set("type", "webp");
+      }
+
+      return url.href;
+    } catch {
+      return rawUrl;
     }
-
-    if (!rawUrl?.endsWith(".gif") && !rawUrl.endsWith("#a")) return url.href;
-
-    if (!shouldAnimate(hovered()) || !props.animate) {
-      url.searchParams.set("type", "webp");
-    }
-
-    return url.href;
   };
 
   // used for webhook override

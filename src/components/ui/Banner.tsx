@@ -59,20 +59,24 @@ export function Banner(props: {
 
   const url = () => {
     if (!props.url) return;
-    const url = new URL(props.url);
+    try {
+      const url = new URL(props.url, window.location.origin);
 
-    if (props.resize) {
-      url.searchParams.set("size", props.resize.toString());
-    }
+      if (props.resize) {
+        url.searchParams.set("size", props.resize.toString());
+      }
 
-    if (!props.url?.endsWith(".gif") && !props.url.endsWith("#a"))
+      if (!props.url?.endsWith(".gif") && !props.url.endsWith("#a"))
+        return url.href;
+
+      if (!shouldAnimate(hovered()) || !props.animate) {
+        url.searchParams.set("type", "webp");
+      }
+
       return url.href;
-
-    if (!shouldAnimate(hovered()) || !props.animate) {
-      url.searchParams.set("type", "webp");
+    } catch {
+      return props.url;
     }
-
-    return url.href;
   };
 
   const getStyles = () => {

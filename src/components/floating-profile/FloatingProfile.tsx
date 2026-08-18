@@ -184,10 +184,17 @@ const DesktopProfileFlyout = (props: {
   );
 
   const user = () => {
-    if (details()) return details()?.user;
-    if (isMe()) return account.user();
-    const user = users.get(props.userId);
-    if (user) return user;
+    const cached = isMe() ? account.user() : users.get(props.userId);
+    const detailed = details()?.user;
+    if (detailed && cached) {
+      return {
+        ...cached,
+        ...detailed,
+        avatar: detailed.avatar || cached.avatar,
+        banner: detailed.banner || cached.banner
+      };
+    }
+    return detailed || cached;
   };
 
   const colors = () => {

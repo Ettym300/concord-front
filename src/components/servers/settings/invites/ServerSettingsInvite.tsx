@@ -70,9 +70,16 @@ export default function ServerSettingsInvite() {
 
   const isServerOwner = () => server()?.createdById === account.user()?.id;
 
+  const [inviteError, setInviteError] = createSignal<null | string>(null);
+
   const onCreateInviteClick = async () => {
-    await createInvite(params.serverId!);
-    fetchInvites();
+    setInviteError(null);
+    try {
+      await createInvite(params.serverId!);
+      await fetchInvites();
+    } catch (err: any) {
+      setInviteError(err?.message || "Não foi possível criar o convite.");
+    }
   };
 
   const deleteInvite = (code: string) => {
@@ -112,6 +119,11 @@ export default function ServerSettingsInvite() {
             onClick={onCreateInviteClick}
           />
         </SettingsBlock>
+        <Show when={inviteError()}>
+          <Text size={14} color="var(--alert-color)">
+            {inviteError()}
+          </Text>
+        </Show>
         <For each={invites()}>
           {(invite) => (
             <InviteItem

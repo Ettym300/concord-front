@@ -35,6 +35,21 @@ if [ -n "$API_URL" ]; then
   }"
 fi
 
+CDN_URL="${VITE_NERIMITY_CDN%/}"
+CDN_PROXY=""
+if [ -n "$CDN_URL" ]; then
+  CDN_PROXY="  location ~ ^/(avatars|profile_banners|attachments|emojis)/ {
+    proxy_pass ${CDN_URL};
+    proxy_http_version 1.1;
+    proxy_set_header Host \$proxy_host;
+    proxy_set_header X-Real-IP \$remote_addr;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+    proxy_ssl_server_name on;
+    client_max_body_size 20M;
+  }"
+fi
+
 cat > /etc/nginx/conf.d/default.conf <<EOF
 server {
   listen 80;
@@ -51,6 +66,8 @@ server {
   }
 
 ${API_PROXY}
+
+${CDN_PROXY}
 
   location / {
     try_files \$uri \$uri/ /index.html;
