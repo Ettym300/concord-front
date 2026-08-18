@@ -3,9 +3,10 @@ FROM node:24-alpine AS build
 ENV CI=true
 WORKDIR /app
 
-RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
+RUN corepack enable && corepack prepare pnpm@10.15.1 --activate
 
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY patches ./patches
 RUN pnpm install --frozen-lockfile
 
 COPY . .
