@@ -80,6 +80,10 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = createSignal("");
   let verifyToken = "";
   let turnstileRef: TurnstileRef | undefined;
+  let emailInput: HTMLInputElement | undefined;
+  let usernameInput: HTMLInputElement | undefined;
+  let passwordInput: HTMLInputElement | undefined;
+  let confirmPasswordInput: HTMLInputElement | undefined;
 
   onMount(() => {
     if (getStorageString(StorageKeys.USER_TOKEN, null)) {
@@ -87,44 +91,74 @@ export default function RegisterPage() {
     }
   });
 
+  const fieldValue = (
+    input: HTMLInputElement | undefined,
+    fallback: string
+  ) => (input?.value ?? fallback).trim();
+
   const registerClicked = async (event?: SubmitEvent | MouseEvent) => {
     event?.preventDefault();
+    event?.stopPropagation();
     const redirectTo = location.query.redirect || "/app/explore/servers";
     if (requestSent()) return;
-    setRequestSent(true);
+
+    const emailValue = fieldValue(emailInput, email());
+    const usernameValue = fieldValue(usernameInput, username());
+    const passwordValue = fieldValue(passwordInput, password());
+    const confirmValue = fieldValue(confirmPasswordInput, confirmPassword());
+
+    setEmail(emailValue);
+    setUsername(usernameValue);
+    setPassword(passwordValue);
+    setConfirmPassword(confirmValue);
     setError({ message: "", path: "" });
 
-    if (password() !== confirmPassword()) {
+    if (!emailValue || !usernameValue || !passwordValue) {
       setError({
-        message: "Confirm password does not match.",
-        path: "Confirm Password"
+        message: t("registerPage.fillAllFields"),
+        path: "other"
       });
-      setRequestSent(false);
       return;
     }
 
-    if (password().length > 72) {
+    if (passwordValue !== confirmValue) {
       setError({
-        message: "Password must be less than 72 characters.",
-        path: "Password"
+        message: t("registerPage.passwordsDoNotMatch"),
+        path: "confirmPassword"
       });
-      setRequestSent(false);
       return;
     }
-    const response = await registerRequest(
-      email(),
-      username().trim(),
-      password().trim(),
-      env.DEV_MODE ? verifyToken || "dev" : verifyToken
-    ).catch((err) => {
-      setError({ message: err.message, path: err.path });
+
+    if (passwordValue.length > 72) {
+      setError({
+        message: t("registerPage.passwordTooLong"),
+        path: "password"
+      });
+      return;
+    }
+
+    setRequestSent(true);
+    try {
+      const response = await registerRequest(
+        emailValue,
+        usernameValue,
+        passwordValue,
+        env.DEV_MODE || !env.TURNSTILE_SITEKEY
+          ? verifyToken || "dev"
+          : verifyToken
+      );
+      setStorageString(StorageKeys.USER_TOKEN, response.token);
+      setStorageString(StorageKeys.FIRST_TIME, "true");
+      navigate(redirectTo);
+    } catch (err: any) {
+      setError({
+        message: err?.message || t("registerPage.registerFailed"),
+        path: err?.path || "other"
+      });
       turnstileRef?.reset();
-    });
-    setRequestSent(false);
-    if (!response) return;
-    setStorageString(StorageKeys.USER_TOKEN, response.token);
-    setStorageString(StorageKeys.FIRST_TIME, "true");
-    navigate(redirectTo);
+    } finally {
+      setRequestSent(false);
+    }
   };
 
   const notices = [
@@ -142,6 +176,7 @@ export default function RegisterPage() {
           <form
             style={{ display: "flex", "flex-direction": "column" }}
             action="#"
+            novalidate
             onSubmit={registerClicked}
           >
             <TitleContainer>
@@ -182,27 +217,35 @@ export default function RegisterPage() {
               margin={[10, 0, 10, 0]}
               label={t("registerPage.email")}
               type="email"
+              errorName="email"
               error={error()}
+              ref={(el) => (emailInput = el as HTMLInputElement)}
               onText={setEmail}
             />
             <Input
               margin={[10, 0, 10, 0]}
               label={t("registerPage.username")}
+              errorName="username"
               error={error()}
+              ref={(el) => (usernameInput = el as HTMLInputElement)}
               onText={setUsername}
             />
             <Input
               margin={[10, 0, 10, 0]}
               label={t("registerPage.password")}
               type="password"
+              errorName="password"
               error={error()}
+              ref={(el) => (passwordInput = el as HTMLInputElement)}
               onText={setPassword}
             />
             <Input
               margin={[10, 0, 10, 0]}
               label={t("registerPage.confirmPassword")}
               type="password"
+              errorName="confirmPassword"
               error={error()}
+              ref={(el) => (confirmPasswordInput = el as HTMLInputElement)}
               onText={setConfirmPassword}
             />
             <Show when={!env.DEV_MODE && env.TURNSTILE_SITEKEY}>
@@ -213,13 +256,7 @@ export default function RegisterPage() {
                 autoResetOnExpire={true}
               />
             </Show>
-            <Show
-              when={
-                !error().path ||
-                error().path === "other" ||
-                error().path === "token"
-              }
-            >
+            <Show when={error().message}>
               <Text size={16} color="var(--alert-color)">
                 {error().message}
               </Text>
@@ -237,7 +274,6 @@ export default function RegisterPage() {
                   ? t("registerPage.registering")
                   : t("registerPage.registerButton")
               }
-              onClick={registerClicked}
             />
           </form>
           <A class={linkStyle} href="/login">

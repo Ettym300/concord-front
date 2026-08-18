@@ -192,6 +192,7 @@ export async function registerRequest(
   return request({
     url: env.SERVER_URL + "/api" + ServiceEndpoints.register(),
     method: "POST",
+    skipQueue: true,
     body: {
       email,
       username,

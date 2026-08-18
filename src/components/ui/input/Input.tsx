@@ -227,7 +227,12 @@ export default function Input(props: Props) {
         <Show when={props.type !== "textarea"}>
           <CustomInput
             disabled={props.disabled}
-            onchange={props.onChange}
+            onchange={(event) => {
+              if (typeof props.onChange === "function") {
+                props.onChange(event);
+              }
+              props.onText?.(event.currentTarget.value);
+            }}
             maxlength={props.maxLength}
             placeholder={props.placeholder}
             ref={inputEl}

@@ -41,6 +41,10 @@
         "registerButton": "Registrar-se",
         "registering": "Registrando…",
         "loginInstead": "Em vez disso, entrar",
+        "fillAllFields": "Preencha email, usuário e senha.",
+        "passwordsDoNotMatch": "As senhas não coincidem.",
+        "passwordTooLong": "A senha deve ter menos de 72 caracteres.",
+        "registerFailed": "Não foi possível criar a conta. Tente de novo.",
         "notices": {
             "toxic": "Não seja tóxico.",
             "nsfw": "Sem conteúdo NSFW (não seguro para o trabalho).",

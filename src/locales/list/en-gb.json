@@ -121,7 +121,11 @@
     "agreement": "By creating an account, you agree to the Terms And Conditions and the Privacy Policy.",
     "registerButton": "Register",
     "registering": "Registering…",
-    "loginInstead": "Login Instead"
+    "loginInstead": "Login Instead",
+    "fillAllFields": "Fill in email, username and password.",
+    "passwordsDoNotMatch": "Confirm password does not match.",
+    "passwordTooLong": "Password must be less than 72 characters.",
+    "registerFailed": "Could not create the account. Try again."
   },
   "resetPassword": {
     "title": "Reset Password",
