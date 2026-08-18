@@ -31,12 +31,6 @@ const [viewMode, setViewMode] = createSignal<VoiceViewMode>("focus");
 
 export function VoiceHeader(props: { channelId?: string }) {
   let headerRef: HTMLDivElement | undefined;
-  createEffect(() => {
-    if (!showParticipants() && headerRef) {
-      headerRef.style.height = "";
-      headerRef.style.minHeight = "";
-    }
-  });
   const { voiceUsers } = useStore();
 
   const [selectedUserId, setSelectedUserId] = createSignal<null | string>(null);
@@ -72,23 +66,20 @@ export function VoiceHeader(props: { channelId?: string }) {
   const isSomeoneVideoStreaming = () =>
     channelVoiceUsers().find((v) => voiceUsers.videoEnabled(v.userId));
 
+  createEffect(() => {
+    if (!headerRef) return;
+    if (!showParticipants() || isSomeoneVideoStreaming()) {
+      headerRef.style.height = "";
+      headerRef.style.minHeight = "";
+    }
+  });
+
   createEffect(
     on(
       () => !!isSomeoneVideoStreaming(),
       (streaming, wasStreaming) => {
         if (streaming && !wasStreaming) setShowLiveChat(false);
         else if (!streaming && wasStreaming) setShowLiveChat(true);
-      }
-    )
-  );
-
-  createEffect(
-    on(
-      () => videoStreamingUsers().length,
-      (count, prev) => {
-        if (count === prev) return;
-        if (count >= 2) setViewMode("gallery");
-        else if (count === 1) setViewMode("focus");
       }
     )
   );

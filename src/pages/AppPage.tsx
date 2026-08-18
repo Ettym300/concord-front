@@ -58,40 +58,49 @@ import { updateTitleAlert } from "@/common/BrowserTitle";
 
 const liveTheaterStyles = css`
   &&.liveTheater {
-    overflow: hidden;
-    display: grid;
+    overflow: hidden !important;
+    display: grid !important;
+    grid-template-rows: auto minmax(0, 1fr);
+    flex: 1 1 0 !important;
+    flex-shrink: 1 !important;
+    width: 100%;
     height: 100%;
     min-height: 0;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr);
   }
-  &&.liveTheater.liveChatOpen {
-    grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);
-  }
-  &&.liveTheater :global(.main-pane-header-bar) {
-    grid-column: 1 / -1;
-    grid-row: 1;
+  &&.liveTheater :global(.live-stage-row) {
+    display: grid;
+    overflow: hidden;
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-height: 0;
+    height: 100%;
   }
   &&.liveTheater :global(.voice-stage) {
-    grid-column: 1;
-    grid-row: 2;
+    position: relative !important;
+    top: auto !important;
+    overflow: hidden !important;
+    flex: none;
+    width: 100%;
+    min-width: 0;
     height: 100% !important;
-    min-height: 0;
-    max-height: none;
+    min-height: 0 !important;
+    max-height: none !important;
     resize: none;
-    overflow: hidden;
   }
   &&.liveTheater :global(.messagePane) {
     display: none;
-    grid-column: 2;
-    grid-row: 2;
-    min-width: 0;
+    width: 360px;
+    min-width: 280px;
     min-height: 0;
+    height: 100%;
     overflow: hidden;
     border-left: 1px solid rgba(255, 255, 255, 0.06);
   }
   &&.liveTheater.liveChatOpen :global(.messagePane) {
     display: flex;
+  }
+  &&.liveTheater :global(.custom-scrollbar),
+  &&.liveTheater :global([class*="CustomScrollbar"]) {
+    display: none;
   }
 `;
 
@@ -115,6 +124,9 @@ const OuterMainPaneContainer = styled("div")`
   display: flex;
   flex-direction: column;
   flex: 1;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
 `;
 
 const MainPaneContainer = styled("div")<MainPaneContainerProps>`
@@ -393,9 +405,16 @@ function MainPane() {
           )}
         >
           <MainPaneHeader />
-          <VoiceHeader channelId={header.details().channelId} />
-          <Outlet name="mainPane" />
-          <Show when={!windowProperties.isMobileAgent()}>
+          <div
+            class="live-stage-row"
+            style={
+              isLiveTheater() ? undefined : { display: "contents" }
+            }
+          >
+            <VoiceHeader channelId={header.details().channelId} />
+            <Outlet name="mainPane" />
+          </div>
+          <Show when={!windowProperties.isMobileAgent() && !isLiveTheater()}>
             <CustomScrollbar
               scrollElement={mainPaneEl()}
               class={css`
