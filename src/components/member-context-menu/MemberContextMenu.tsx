@@ -271,7 +271,7 @@ export default function MemberContextMenu(props: Props) {
       voiceUsers.currentUser()?.channelId!,
       props.userId
     );
-  const inSameCall = () => !!voiceUser()?.audio && !isSelf();
+  const inSameCall = () => !!voiceUser() && !isSelf();
   const isLocallyMuted = () => (cachedVolumes[props.userId] ?? 1) === 0;
 
   const onMentionClick = () => {
@@ -393,13 +393,9 @@ export default function MemberContextMenu(props: Props) {
 }
 
 function Header(props: { userId: string }) {
-  const setVoiceVolume = (volume: number) => {
-    setCachedVolumes(props.userId, volume);
-  };
-  const voiceVolume = () => cachedVolumes[props.userId] || 1;
-
   const store = useStore();
   const user = () => store.users.get(props.userId);
+  const isMe = () => user()?.id === store.account.user()?.id;
 
   const voiceUser = () =>
     store.voiceUsers.getVoiceUser(
@@ -407,23 +403,24 @@ function Header(props: { userId: string }) {
       props.userId
     );
   const audio = () => voiceUser()?.audio;
+  const inSameCall = () => !!voiceUser() && !isMe();
+  const voiceVolume = () => cachedVolumes[props.userId] ?? 1;
+
+  const applyVolume = (volume: number) => {
+    setCachedVolumes(props.userId, volume);
+    const el = audio();
+    if (el) el.volume = volume;
+  };
 
   createEffect(
-    on(audio, () => {
-      const audio = voiceUser()?.audio;
-      if (!audio) return;
-      console.log(audio.volume);
-      setVoiceVolume(audio.volume);
+    on(audio, (el) => {
+      if (!el) return;
+      el.volume = cachedVolumes[props.userId] ?? 1;
     })
   );
 
-  const isMe = () => user()?.id === store.account.user()?.id;
-
-  const onVolumeChange = (e: any) => {
-    setVoiceVolume(Number(e.currentTarget?.value!));
-    const audio = voiceUser()?.audio;
-    if (!audio) return;
-    audio.volume = Number(e.currentTarget?.value!);
+  const onVolumeChange = (e: InputEvent & { currentTarget: HTMLInputElement }) => {
+    applyVolume(Number(e.currentTarget.value));
   };
 
   return (
@@ -435,15 +432,17 @@ function Header(props: { userId: string }) {
         </div>
       </div>
 
-      <Show when={audio() && !isMe()}>
+      <Show when={inSameCall()}>
         <div class={styles.voiceVolume}>
-          <div class={styles.label}>{t("userContextMenu.callVolume")}</div>
+          <div class={styles.label}>{t("userContextMenu.userVolume")}</div>
           <input
             type="range"
             min={0}
             max={1}
             step={0.01}
             value={voiceVolume()}
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}
             onInput={onVolumeChange}
           />
         </div>

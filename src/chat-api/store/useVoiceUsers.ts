@@ -496,7 +496,7 @@ const createPeer = (voiceUser: VoiceUser, signal?: SimplePeer.SignalData) => {
     if (!streams) return;
 
     const audio = newVoiceUser.audio || new Audio();
-    const volume = cachedVolumes[userId] || 1;
+    const volume = cachedVolumes[userId] ?? 1;
     audio.volume = volume;
     audio.muted = deafened.enabled;
     const deviceId = getStorageString(StorageKeys.outputDeviceId, undefined);

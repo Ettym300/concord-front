@@ -726,6 +726,7 @@
         "editRoles": "Editar cargos",
         "changeNickname": "Alterar apelido",
         "callVolume": "Volume da chamada",
+        "userVolume": "Volume do usuário",
         "transferOwnership": "Transferir propriedade"
     },
     "kickServerMemberModal": {

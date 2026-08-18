@@ -979,7 +979,8 @@
         "editRoles": "Edit Roles",
         "changeNickname": "Change Nickname",
         "transferOwnership": "Transfer Ownership",
-        "callVolume": "Call Volume"
+        "callVolume": "Call Volume",
+        "userVolume": "User Volume"
     },
   "emojiModal": {
     "title": "Emoji",
