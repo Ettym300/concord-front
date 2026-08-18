@@ -74,10 +74,21 @@ export function VoiceHeader(props: { channelId?: string }) {
 
   createEffect(
     on(
-      () => !!voiceUsers.currentUser()?.videoStream,
-      (sharing, wasSharing) => {
-        if (sharing) setShowLiveChat(false);
-        else if (wasSharing) setShowLiveChat(true);
+      () => !!isSomeoneVideoStreaming(),
+      (streaming, wasStreaming) => {
+        if (streaming && !wasStreaming) setShowLiveChat(false);
+        else if (!streaming && wasStreaming) setShowLiveChat(true);
+      }
+    )
+  );
+
+  createEffect(
+    on(
+      () => videoStreamingUsers().length,
+      (count, prev) => {
+        if (count === prev) return;
+        if (count >= 2) setViewMode("gallery");
+        else if (count === 1) setViewMode("focus");
       }
     )
   );

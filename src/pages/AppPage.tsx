@@ -8,6 +8,7 @@ import {
   Show
 } from "solid-js";
 import MainPaneHeader from "../components/main-pane-header/MainPaneHeader";
+import { VoiceHeader } from "../components/main-pane-header/voice-header/VoiceHeader";
 
 import {
   getStorageString,
@@ -59,11 +60,13 @@ const liveTheaterStyles = css`
   &&.liveTheater {
     overflow: hidden;
     display: grid;
+    height: 100%;
+    min-height: 0;
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr);
   }
   &&.liveTheater.liveChatOpen {
-    grid-template-columns: minmax(0, 1fr) minmax(240px, 340px);
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);
   }
   &&.liveTheater :global(.main-pane-header-bar) {
     grid-column: 1 / -1;
@@ -390,6 +393,7 @@ function MainPane() {
           )}
         >
           <MainPaneHeader />
+          <VoiceHeader channelId={header.details().channelId} />
           <Outlet name="mainPane" />
           <Show when={!windowProperties.isMobileAgent()}>
             <CustomScrollbar
