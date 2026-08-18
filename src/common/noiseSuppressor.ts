@@ -68,6 +68,44 @@ function passthrough(input: MediaStream): WrappedMic {
   };
 }
 
+function webRtcAudioStream(
+  processed: MediaStream,
+  fallback: MediaStream
+): { stream: MediaStream; extraDispose: () => void } {
+  const track = processed.getAudioTracks()[0];
+  if (!track || track.muted) {
+    if (track?.muted) {
+      log("RTC", "Processed mic stayed muted; sending original microphone");
+    }
+    return { stream: fallback, extraDispose: () => {} };
+  }
+
+  const Processor = (window as any).MediaStreamTrackProcessor;
+  const Generator = (window as any).MediaStreamTrackGenerator;
+  if (typeof Processor === "function" && typeof Generator === "function") {
+    try {
+      const processor = new Processor({ track });
+      const generator = new Generator({ kind: "audio" });
+      const abort = new AbortController();
+      processor.readable
+        .pipeTo(generator.writable, { signal: abort.signal })
+        .catch(() => {});
+      const out = new MediaStream([generator]);
+      return {
+        stream: out,
+        extraDispose: () => {
+          abort.abort();
+          out.getTracks().forEach((t) => t.stop());
+        }
+      };
+    } catch (err) {
+      log("RTC", "MediaStreamTrackGenerator failed", err);
+    }
+  }
+
+  return { stream: processed, extraDispose: () => {} };
+}
+
 async function tryBrowserNoiseSuppression(input: MediaStream) {
   const track = input.getAudioTracks()[0];
   if (!track) return;
@@ -131,18 +169,18 @@ async function wrapWithNode(
               once: true
             });
           }),
-          new Promise<void>((resolve) => window.setTimeout(resolve, 2000))
+          new Promise<void>((resolve) => window.setTimeout(resolve, 800))
         ]);
-      }
-      if (processedTrack.muted) {
-        log("RTC", "Processed mic track is still muted; sending anyway");
       }
     }
 
+    const webRtc = webRtcAudioStream(dest.stream, input);
+
     return {
-      stream: dest.stream,
+      stream: webRtc.stream,
       originalStream: input,
       dispose: () => {
+        webRtc.extraDispose();
         pump.pause();
         pump.srcObject = null;
         dest.stream.getTracks().forEach((track) => track.stop());

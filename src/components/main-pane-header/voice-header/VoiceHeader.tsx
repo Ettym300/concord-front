@@ -252,14 +252,30 @@ function VideoStream(props: {
   let videoEl: HTMLVideoElement | undefined;
 
   const [muted, setMuted] = createSignal(false);
+  const [playbackReady, setPlaybackReady] = createSignal(false);
+
+  const shouldMute = () => props.mute || muted() || !playbackReady();
+
+  const startPlayback = (el: HTMLVideoElement) => {
+    el.muted = true;
+    el.playsInline = true;
+    void el
+      .play()
+      .then(() => setPlaybackReady(true))
+      .catch(() => {
+        const unlock = () => {
+          void el.play().then(() => setPlaybackReady(true));
+          document.removeEventListener("pointerdown", unlock);
+        };
+        document.addEventListener("pointerdown", unlock, { once: true });
+      });
+  };
 
   const attachStream = (el?: HTMLVideoElement) => {
     if (!el) return;
     videoEl = el;
     el.srcObject = props.mediaStream;
-    el.muted = props.mute || muted();
-    el.playsInline = true;
-    void el.play().catch(() => {});
+    startPlayback(el);
   };
 
   createEffect(() => {
@@ -268,9 +284,10 @@ function VideoStream(props: {
     if (!el) return;
     if (el.srcObject !== stream) {
       el.srcObject = stream;
+      setPlaybackReady(false);
+      startPlayback(el);
     }
-    el.muted = props.mute || muted();
-    void el.play().catch(() => {});
+    el.muted = shouldMute();
   });
 
   return (
@@ -284,7 +301,7 @@ function VideoStream(props: {
         ref={attachStream}
         autoplay
         playsinline
-        muted={props.mute || muted()}
+        muted={shouldMute()}
       />
       <Show when={props.username}>
         <div class={style.videoName}>{props.username}</div>

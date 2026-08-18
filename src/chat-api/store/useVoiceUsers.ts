@@ -22,10 +22,7 @@ import { LazySimplePeer } from "@/components/LazySimplePeer";
 import { log } from "@/common/logger";
 import { wrapMicWithNoiseSuppression, preloadNoiseSuppressor } from "@/common/noiseSuppressor";
 
-const createIceServers = () => [
-  ...(getStorageBoolean(StorageKeys.voiceUseTurnServers, true)
-    ? [getCachedCredentials()]
-    : []),
+const FALLBACK_ICE_SERVERS: RTCIceServer[] = [
   {
     urls: ["stun:stun.l.google.com:19302"]
   },
@@ -53,6 +50,38 @@ const createIceServers = () => [
     credential: "DTk2mXfXv4kJYPvD"
   }
 ];
+
+function asIceServerList(value: unknown): RTCIceServer[] {
+  if (!value) return [];
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => asIceServerList(item));
+  }
+  if (typeof value === "object") {
+    const obj = value as Record<string, unknown>;
+    if (obj.iceServers) return asIceServerList(obj.iceServers);
+    if (obj.urls || obj.url) return [value as RTCIceServer];
+  }
+  return [];
+}
+
+const createIceServers = (): RTCIceServer[] => {
+  const extra = getStorageBoolean(StorageKeys.voiceUseTurnServers, true)
+    ? asIceServerList(getCachedCredentials())
+    : [];
+  return [...extra, ...FALLBACK_ICE_SERVERS];
+};
+
+function playRemoteMedia(el: HTMLMediaElement) {
+  const tryPlay = () => {
+    void el.play().catch(() => {});
+  };
+  tryPlay();
+  const unlock = () => {
+    tryPlay();
+    document.removeEventListener("pointerdown", unlock);
+  };
+  document.addEventListener("pointerdown", unlock, { once: true });
+}
 
 type StreamWithTracks = {
   stream: MediaStream;
@@ -102,6 +131,7 @@ const [currentVoiceUser, setCurrentVoiceUser] = createSignal<
 const { start, stop } = useGlobalKey();
 const [voiceMode] = useVoiceInputMode();
 let enableMicGeneration = 0;
+let missingPeerTimer: number | undefined;
 
 createEffect(
   on(currentVoiceUser, (current) => {
@@ -173,6 +203,10 @@ createEffect(
 
 const setCurrentChannelId = (channelId: string | null, reconnect = false) => {
   const current = currentVoiceUser();
+  if (missingPeerTimer) {
+    window.clearTimeout(missingPeerTimer);
+    missingPeerTimer = undefined;
+  }
   if (current?.channelId) {
     removeAllPeers(current?.channelId);
     current.vadInstance?.destroy();
@@ -216,6 +250,16 @@ const setCurrentChannelId = (channelId: string | null, reconnect = false) => {
       micMuted: true
     });
   }
+  missingPeerTimer = window.setTimeout(() => {
+    const latest = currentVoiceUser();
+    if (!latest || latest.channelId !== channelId) return;
+    const me = useAccount().user()?.id;
+    getVoiceUsersByChannelId(channelId).forEach((voiceUser) => {
+      if (voiceUser.userId === me || voiceUser.peer) return;
+      log("RTC", "No offer from", voiceUser.user().username, "- initiating");
+      createPeer(voiceUser);
+    });
+  }, 2000);
 };
 
 const activeRemoteStream = (userId: string, kind: "audio" | "video") => {
@@ -343,16 +387,31 @@ const createPeer = (voiceUser: VoiceUser, signal?: SimplePeer.SignalData) => {
     streams.push(current.videoStream);
   }
 
-  const peer =
-    voiceUser.peer ||
-    new LazySimplePeer({
+  let peer = voiceUser.peer;
+  if (!peer) {
+    const peerConfig = {
       initiator,
       trickle: true,
+      streams,
       config: {
         iceServers: createIceServers()
-      },
-      streams
-    });
+      }
+    };
+    try {
+      peer = new LazySimplePeer(peerConfig);
+    } catch (err) {
+      log("RTC", "Peer create failed, retrying with fallback ICE", err);
+      try {
+        peer = new LazySimplePeer({
+          ...peerConfig,
+          config: { iceServers: FALLBACK_ICE_SERVERS }
+        });
+      } catch (retryErr) {
+        log("RTC", "Peer create retry failed", retryErr);
+        return;
+      }
+    }
+  }
 
   setVoiceUsers(voiceUser.channelId, voiceUser.userId, "peer", peer);
 
@@ -378,6 +437,14 @@ const createPeer = (voiceUser: VoiceUser, signal?: SimplePeer.SignalData) => {
   peer.on("track", (track, stream) => {
     const channelId = voiceUser.channelId;
     const userId = voiceUser.userId;
+    log(
+      "RTC",
+      "Remote",
+      track.kind,
+      "from",
+      voiceUser.user().username,
+      track.readyState
+    );
 
     stream.onremovetrack = (event) => {
       const newVoiceUser = getVoiceUser(channelId, userId);
@@ -445,7 +512,7 @@ const createPeer = (voiceUser: VoiceUser, signal?: SimplePeer.SignalData) => {
       setVoiceUsers(channelId, userId, "vadInstance", vadInstance);
 
       audio.srcObject = activeAudio || null;
-      audio.play();
+      playRemoteMedia(audio);
       if (!audio.srcObject) {
         setVoiceUsers(channelId, userId, "audio", undefined);
       }
@@ -817,7 +884,11 @@ const addStreamToPeers = (stream: MediaStream) => {
   const voiceUsers = getVoiceUsersByChannelId(current.channelId);
 
   voiceUsers.forEach((voiceUser) => {
-    voiceUser.peer?.addStream(stream);
+    try {
+      voiceUser.peer?.addStream(stream);
+    } catch (err) {
+      log("RTC", "Failed to add stream to", voiceUser.user().username, err);
+    }
   });
 };
 
@@ -827,7 +898,11 @@ const removeStreamFromPeers = (stream: MediaStream) => {
   const voiceUsers = getVoiceUsersByChannelId(current.channelId);
 
   voiceUsers.forEach((voiceUser) => {
-    voiceUser.peer?.removeStream(stream);
+    try {
+      voiceUser.peer?.removeStream(stream);
+    } catch (err) {
+      log("RTC", "Failed to remove stream from", voiceUser.user().username, err);
+    }
   });
 };
 

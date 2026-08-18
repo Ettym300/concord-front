@@ -75,6 +75,7 @@ const liveTheaterStyles = css`
     min-height: 0;
     max-height: none;
     resize: none;
+    overflow: hidden;
   }
   &&.liveTheater :global(.messagePane) {
     display: none;
@@ -89,8 +90,10 @@ const liveTheaterStyles = css`
     display: flex;
   }
 `;
+
+const mobileMainPaneStyles = css`
   height: 100%;
-    && {
+  && {
     margin: 0;
     border-radius: 0px;
     border: none;
