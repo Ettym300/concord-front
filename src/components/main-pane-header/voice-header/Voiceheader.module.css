@@ -8,23 +8,22 @@
 }
 
 .headerVoiceParticipants {
-  position: sticky;
+  position: relative;
   z-index: 11111;
-  /* hide header margin and border when scrolled */
-  top: calc(var(--header-height) - 4px);
   right: 0;
   left: 0;
   display: flex;
-  overflow: auto;
-  align-items: center;
+  overflow: hidden;
+  align-items: stretch;
   flex-direction: column;
   flex-shrink: 0;
-  min-height: 140px;
-  padding-right: 12px;
-  padding-left: 12px;
+  min-height: 420px;
+  height: calc(100dvh - 80px);
+  padding-right: 0;
+  padding-left: 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  background-color: rgba(0, 0, 0, 0.22);
-  resize: vertical;
+  background-color: #000;
+  resize: none;
   user-select: none;
   &.videoStream {
     display: flex;
@@ -32,8 +31,9 @@
     align-items: stretch;
     position: relative;
     flex: 1;
-    height: 70vh;
-    min-height: 50vh;
+    height: calc(100dvh - 80px);
+    min-height: 420px;
+    max-height: none;
     padding-right: 0;
     padding-left: 0;
     background-color: #000;

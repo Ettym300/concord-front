@@ -73,10 +73,18 @@ export function VoiceHeader(props: { channelId?: string }) {
     channelVoiceUsers().find((v) => voiceUsers.videoEnabled(v.userId));
 
   createEffect(() => {
-    if (!headerRef) return;
-    if (!showParticipants() || isSomeoneVideoStreaming()) {
-      headerRef.style.height = "";
-      headerRef.style.minHeight = "";
+    const el = headerRef;
+    if (!el) return;
+    if (isSomeoneVideoStreaming()) {
+      el.style.setProperty("height", "calc(100dvh - 80px)", "important");
+      el.style.setProperty("min-height", "420px", "important");
+      el.style.setProperty("max-height", "none", "important");
+      el.style.resize = "none";
+    } else {
+      el.style.removeProperty("height");
+      el.style.removeProperty("min-height");
+      el.style.removeProperty("max-height");
+      el.style.resize = "";
     }
   });
 
@@ -106,7 +114,7 @@ export function VoiceHeader(props: { channelId?: string }) {
   };
 
   return (
-    <Show when={channelVoiceUsers().length}>
+    <Show when={channelVoiceUsers().length && isSomeoneVideoStreaming()}>
       <div
         ref={headerRef}
         class={cn(

@@ -58,36 +58,26 @@ import { updateTitleAlert } from "@/common/BrowserTitle";
 const liveTheaterStyles = css`
   &&.liveTheater {
     overflow: hidden !important;
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(50vh, 1fr);
+    display: flex !important;
+    flex-direction: column !important;
     flex: 1 1 0 !important;
     flex-shrink: 1 !important;
     width: 100%;
     min-height: 0;
   }
-  &&.liveTheater.liveChatOpen {
-    grid-template-columns: minmax(0, 1fr) 360px;
-  }
-  &&.liveTheater :global(.main-pane-header-bar) {
-    grid-column: 1 / -1;
-    grid-row: 1;
-  }
   &&.liveTheater :global(.voice-stage) {
-    grid-column: 1;
-    grid-row: 2;
     position: relative !important;
     top: auto !important;
     overflow: hidden !important;
-    min-height: 50vh !important;
-    height: auto !important;
+    flex: 1 0 auto;
+    width: 100%;
+    height: calc(100dvh - 80px) !important;
+    min-height: 420px !important;
     max-height: none !important;
-    resize: none;
+    resize: none !important;
   }
   &&.liveTheater :global(.messagePane) {
     display: none;
-    grid-column: 2;
-    grid-row: 2;
     min-width: 0;
     min-height: 0;
     overflow: hidden;
@@ -95,6 +85,15 @@ const liveTheaterStyles = css`
   }
   &&.liveTheater.liveChatOpen :global(.messagePane) {
     display: flex;
+    flex: 0 0 360px;
+    width: 360px;
+  }
+  &&.liveTheater.liveChatOpen {
+    flex-direction: row !important;
+    flex-wrap: wrap;
+  }
+  &&.liveTheater.liveChatOpen :global(.main-pane-header-bar) {
+    flex: 1 1 100%;
   }
   &&.liveTheater :global(.custom-scrollbar),
   &&.liveTheater :global([class*="CustomScrollbar"]) {
