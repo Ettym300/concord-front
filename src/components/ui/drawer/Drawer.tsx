@@ -389,7 +389,7 @@ export default function DrawerLayout(props: DrawerLayoutProps) {
                     : leftDrawerResizeBar.width() + "px"
                   : "initial",
               display: "flex",
-              gap: "4px",
+              gap: "8px",
               "flex-shrink": 0,
               position: "relative"
             }}

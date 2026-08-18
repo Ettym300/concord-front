@@ -4,9 +4,10 @@ solid-styled-components styles, which have non-deterministic load order. */
   padding: 10px;
   padding-left: 15px;
   margin-bottom: 5px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.4);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.035);
+  box-shadow: none;
+  border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .block {

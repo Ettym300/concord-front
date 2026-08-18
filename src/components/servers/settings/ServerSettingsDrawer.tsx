@@ -13,7 +13,6 @@ import { Bitwise } from "@/chat-api/Bitwise";
 
 import InVoiceActions from "@/components/InVoiceActions";
 
-import { SupportBlock } from "@/components/SupportBlock";
 import { FlexColumn } from "@/components/ui/Flexbox";
 import { useWindowProperties } from "@/common/useWindowProperties";
 
@@ -139,7 +138,6 @@ function Footer() {
   const { isMobileWidth } = useWindowProperties();
   return (
     <FooterContainer gap={2} data-mobile-width={isMobileWidth()}>
-      <SupportBlock />
       <InVoiceActions style={isMobileWidth() ? { bottom: "76px" } : {}} />
     </FooterContainer>
   );

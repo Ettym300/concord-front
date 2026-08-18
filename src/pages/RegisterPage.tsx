@@ -29,18 +29,23 @@ const RegisterPageContainer = styled("div")`
 
 const Content = styled(FlexColumn)`
   height: 100%;
-  border-radius: 8px;
-  margin: 8px;
+  border-radius: 18px;
+  margin: 12px;
   margin-top: 0;
-  margin-bottom: 0;
+  margin-bottom: 12px;
   overflow: auto;
   flex: 1;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--pane-color);
 `;
 
 const Container = styled(FlexColumn)`
-  width: 300px;
+  width: 340px;
   margin: auto;
-  padding: 10px;
+  padding: 24px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 `;
 
 const TitleContainer = styled("div")`

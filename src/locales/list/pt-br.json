@@ -836,6 +836,11 @@
         "admin": "Administrador(a)",
         "info": "Informações",
         "files": "Arquivos",
+        "tabs": {
+            "info": "Info",
+            "files": "Arquivos",
+            "search": "Busca"
+        },
         "searchBarPlaceholder": "Pesquisar {{username}}",
         "searchBarChannelPlaceholder": "Pesquisar em {{channelName}}",
         "sortLatest": "Mais recente",
@@ -1307,6 +1312,7 @@
         "avatarAndBanner": {
             "avatar": "Avatar",
             "banner": "Banner",
+            "bannerMemberListHint": "Aparece como capa na lista de membros do servidor.",
             "browse": "Procurar",
             "supportedFileTypes": "Suportado: {{extensions}}, máximo {{size}}",
             "remove": "Remover",
@@ -1392,7 +1398,9 @@
     },
     "serverDrawer": {
         "joinedThisSessionNotice": "Você verá todas as notificações deste servidor.",
-        "joinedThisSessionNoticeSetToMentionsOnly": "Definir para apenas menções"
+        "joinedThisSessionNoticeSetToMentionsOnly": "Definir para apenas menções",
+        "voiceChannels": "Canais de voz",
+        "textChannels": "Canais de texto"
     },
     "datetime": {
         "lessThanAMinuteAgo": "há alguns segundos",

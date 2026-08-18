@@ -6,7 +6,8 @@
 
 .talking {
   border-radius: 50%;
-  box-shadow: 0 0 0 2px var(--success-color), 0 0 10px rgba(35, 165, 89, 0.7);
+  box-shadow: 0 0 0 2px var(--success-color),
+    0 0 12px color-mix(in srgb, var(--success-color) 70%, transparent);
 }
 
 .imageContainer {

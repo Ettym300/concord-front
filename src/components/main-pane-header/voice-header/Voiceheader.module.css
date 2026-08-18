@@ -19,11 +19,11 @@
   align-items: center;
   flex-direction: column;
   flex-shrink: 0;
-  min-height: 120px;
-  padding-right: 10px;
-  padding-left: 10px;
-  border-bottom: solid 1px rgba(0, 0, 0, 0.35);
-  background-color: #1e1f22;
+  min-height: 140px;
+  padding-right: 12px;
+  padding-left: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: rgba(0, 0, 0, 0.22);
   resize: vertical;
   user-select: none;
   &.videoStream {
@@ -192,7 +192,7 @@
     height: 100%;
     min-height: 140px;
     border: solid 2px transparent;
-    border-radius: 8px;
+    border-radius: 14px;
     background-color: rgba(0, 0, 0, 0.45);
     cursor: pointer;
     &.hasVideo {
@@ -200,8 +200,9 @@
     }
     &.selected,
     &.talking {
-      border-color: #23a559;
-      box-shadow: 0 0 0 2px #23a559, 0 0 14px rgba(35, 165, 89, 0.55);
+      border-color: var(--success-color);
+      box-shadow: 0 0 0 2px var(--success-color),
+        0 0 16px color-mix(in srgb, var(--success-color) 50%, transparent);
     }
     &.disconnected {
       opacity: 0.35;

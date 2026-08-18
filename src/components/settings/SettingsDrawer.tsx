@@ -19,7 +19,6 @@ import { t } from "@nerimity/i18lite";
 import InVoiceActions from "../InVoiceActions";
 import { ShowExperiment } from "@/common/experiments";
 
-import { SupportBlock } from "../SupportBlock";
 import { useWindowProperties } from "@/common/useWindowProperties";
 import { Rerun } from "@solid-primitives/keyed";
 import { getCurrentLanguage } from "@/locales/languages";
@@ -125,7 +124,6 @@ function Footer() {
         </For>
       </VersionsContainer>
 
-      <SupportBlock />
       <FlexRow gap={4} style={{ "margin-left": "2px", margin: "4px" }}>
         <FooterItem
           href="https://github.com/Nerimity/Nerimity-Web"

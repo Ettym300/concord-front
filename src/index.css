@@ -8,6 +8,7 @@ body {
   background: var(--background-color);
   font-family: "Inter", "gg sans", "Noto Sans", sans-serif;
   font-weight: 400;
+  letter-spacing: 0.01em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overscroll-behavior-y: contain;
@@ -16,8 +17,12 @@ body {
 }
 
 :root {
-  --header-height: 48px;
+  --header-height: 52px;
   --bottom-pane-gap: 70px;
+  --app-gap: 8px;
+  --panel-radius: 18px;
+  --panel-border: 1px solid rgba(255, 255, 255, 0.055);
+  --panel-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
 }
 
 #root.mobileAgent {

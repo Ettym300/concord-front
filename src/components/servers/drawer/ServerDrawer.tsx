@@ -120,9 +120,124 @@ const MembersItem = () => {
   );
 };
 
+const ChannelListSkeleton = () => {
+  return (
+    <Skeleton.List>
+      <Skeleton.Item height="34px" width="100%" />
+    </Skeleton.List>
+  );
+};
+
+type ChannelSectionKind = "voice" | "text";
+
+function isTextChannel(channel: Channel) {
+  return channel.type === ChannelType.SERVER_TEXT;
+}
+
+function buildChannelSections(channels: Channel[]) {
+  const sections: { kind: ChannelSectionKind; channels: Channel[] }[] = [];
+
+  channels.forEach((channel) => {
+    const kind: ChannelSectionKind = isTextChannel(channel) ? "text" : "voice";
+    const last = sections[sections.length - 1];
+    if (last?.kind === kind) {
+      last.channels.push(channel);
+      return;
+    }
+    sections.push({ kind, channels: [channel] });
+  });
+
+  return sections;
+}
+
+function ChannelSectionDivider(props: { label: string }) {
+  return (
+    <div class={style.channelSectionDivider}>
+      <span class={style.channelSectionLine} />
+      <span class={style.channelSectionLabel}>{props.label}</span>
+      <span class={style.channelSectionLine} />
+    </div>
+  );
+}
+
+function ChannelSectionList(props: {
+  channels: Channel[];
+  expanded: boolean;
+  selectedChannelId?: string;
+}) {
+  const sections = createMemo(() => buildChannelSections(props.channels));
+  const showSectionLabels = () => sections().length > 1;
+
+  return (
+    <For each={sections()}>
+      {(section) => (
+        <>
+          <Show when={showSectionLabels()}>
+            <ChannelSectionDivider
+              label={t(
+                section.kind === "text"
+                  ? "serverDrawer.textChannels"
+                  : "serverDrawer.voiceChannels"
+              )}
+            />
+          </Show>
+          <For each={section.channels}>
+            {(channel) => (
+              <ChannelItem
+                expanded={props.expanded}
+                channel={channel}
+                selected={props.selectedChannelId === channel.id}
+              />
+            )}
+          </For>
+        </>
+      )}
+    </For>
+  );
+}
+
+type RootListItem =
+  | { type: "category"; channel: Channel }
+  | { type: "section"; kind: ChannelSectionKind; channels: Channel[] };
+
 const ChannelList = () => {
   const store = useStore();
   const controller = useServerDrawerController();
+
+  const rootListItems = createMemo(() => {
+    const items: RootListItem[] = [];
+    let looseChannels: Channel[] = [];
+
+    const flushLooseChannels = () => {
+      if (!looseChannels.length) return;
+      buildChannelSections(looseChannels).forEach((section) => {
+        items.push({
+          type: "section",
+          kind: section.kind,
+          channels: section.channels
+        });
+      });
+      looseChannels = [];
+    };
+
+    controller?.sortedRootChannels().forEach((channel) => {
+      if (!channel) return;
+      if (channel.type === ChannelType.CATEGORY) {
+        flushLooseChannels();
+        items.push({ type: "category", channel });
+        return;
+      }
+      looseChannels.push(channel);
+    });
+
+    flushLooseChannels();
+    return items;
+  });
+
+  const showLooseSectionLabels = () => {
+    const sections = rootListItems().filter((item) => item.type === "section");
+    return sections.length > 1;
+  };
 
   return (
     <div class={style.channelList}>
@@ -130,24 +245,52 @@ const ChannelList = () => {
         when={store.account.lastAuthenticatedAt()}
         fallback={<ChannelListSkeleton />}
       >
-        <For each={controller?.sortedRootChannels()}>
-          {(channel) => (
-            <Switch
-              fallback={
-                <ChannelItem
-                  expanded={true}
-                  channel={channel!}
-                  selected={controller?.params().channelId === channel!.id}
-                />
-              }
-            >
-              <Match when={channel!.type === ChannelType.CATEGORY}>
-                <CategoryControllerProvider channel={channel}>
+        <For each={rootListItems()}>
+          {(item) => (
+            <Switch>
+              <Match when={item.type === "category"}>
+                <CategoryControllerProvider
+                  channel={(item as Extract<RootListItem, { type: "category" }>).channel}
+                >
                   <CategoryItem
-                    channel={channel!}
-                    selected={controller?.params().channelId === channel!.id}
+                    channel={(item as Extract<RootListItem, { type: "category" }>).channel}
+                    selected={
+                      controller?.params().channelId ===
+                      (item as Extract<RootListItem, { type: "category" }>).channel.id
+                    }
                   />
                 </CategoryControllerProvider>
+              </Match>
+              <Match when={item.type === "section"}>
+                <Show
+                  when={
+                    showLooseSectionLabels() ||
+                    (item as Extract<RootListItem, { type: "section" }>).kind ===
+                      "text"
+                  }
+                >
+                  <ChannelSectionDivider
+                    label={t(
+                      (item as Extract<RootListItem, { type: "section" }>).kind ===
+                        "text"
+                        ? "serverDrawer.textChannels"
+                        : "serverDrawer.voiceChannels"
+                    )}
+                  />
+                </Show>
+                <For
+                  each={
+                    (item as Extract<RootListItem, { type: "section" }>).channels
+                  }
+                >
+                  {(channel) => (
+                    <ChannelItem
+                      expanded={true}
+                      channel={channel}
+                      selected={controller?.params().channelId === channel.id}
+                    />
+                  )}
+                </For>
               </Match>
             </Switch>
           )}
@@ -157,18 +300,9 @@ const ChannelList = () => {
   );
 };
 
-const ChannelListSkeleton = () => {
-  return (
-    <Skeleton.List>
-      <Skeleton.Item height="34px" width="100%" />
-    </Skeleton.List>
-  );
-};
-
 function CategoryItem(props: { channel: Channel; selected: boolean }) {
   const controller = useServerDrawerController();
   const categoryController = useCategoryController();
-  const [hovered, setHovered] = createSignal(false);
 
   const sortedServerChannels = () =>
     categoryController!.sortedCategoryChannels();
@@ -182,11 +316,7 @@ function CategoryItem(props: { channel: Channel; selected: boolean }) {
 
   return (
     <Show when={!isPrivateCategory() || sortedServerChannels().length}>
-      <div
-        class={style.categoryContainer}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-      >
+      <div class={style.categoryContainer}>
         <div
           class={style.categoryItemContainer}
           onClick={() => controller?.toggleExpanded(props.channel)}
@@ -198,16 +328,14 @@ function CategoryItem(props: { channel: Channel; selected: boolean }) {
             class={cn(expanded() && style.expanded, style.expandIcon)}
           />
 
-          <ChannelIcon
-            icon={props.channel.icon}
-            type={props.channel.type}
-            hovered={hovered()}
-            class={style.categoryItemChannelIcon}
-          />
+          <div class={style.categoryDivider}>
+            <span class={style.channelSectionLine} />
+            <span class={style.categoryDividerLabel}>{props.channel.name}</span>
+            <span class={style.channelSectionLine} />
+          </div>
           <Show when={isPrivateCategory()}>
             <Icon name="lock" size={14} style={{ opacity: 0.3 }} />
           </Show>
-          <div class={style.label}>{props.channel.name}</div>
 
           <div class={style.categoryButtons}>
             <Show when={controller!.hasModeratorPermission()}>
@@ -229,15 +357,11 @@ function CategoryItem(props: { channel: Channel; selected: boolean }) {
 
         <Show when={sortedServerChannels().length}>
           <div class={style.categoryChannelList}>
-            <For each={sortedServerChannels()}>
-              {(channel) => (
-                <ChannelItem
-                  expanded={expanded()}
-                  channel={channel!}
-                  selected={controller?.params().channelId === channel!.id}
-                />
-              )}
-            </For>
+            <ChannelSectionList
+              channels={sortedServerChannels()}
+              expanded={expanded()}
+              selectedChannelId={controller?.params().channelId}
+            />
           </div>
         </Show>
       </div>

@@ -22,19 +22,19 @@ const ThemeTokensBase = [
   {
     key: "background-color",
     category: ThemeCategory.Surface,
-    value: "#1e1f22",
+    value: "#07080d",
     allowGradient: true
   },
   {
     key: "pane-color",
     category: ThemeCategory.Surface,
-    value: "#313338",
+    value: "#12141c",
     allowGradient: true
   },
   {
     key: "side-pane-color",
     category: ThemeCategory.Surface,
-    value: "#2b2d31",
+    value: "#0e1016",
     allowGradient: true
   },
 
@@ -42,86 +42,86 @@ const ThemeTokensBase = [
   {
     key: "header-background-color",
     category: ThemeCategory.Overlays,
-    value: "#313338"
+    value: "rgba(18, 20, 28, 0.78)"
   },
   {
     key: "header-background-color-blur-disabled",
     category: ThemeCategory.Overlays,
-    value: "#313338"
+    value: "#12141c"
   },
   {
     key: "tooltip-background-color",
     category: ThemeCategory.Overlays,
-    value: "#111214"
+    value: "#08090f"
   },
 
   // Input
   {
     key: "chat-input-background-color",
     category: ThemeCategory.Input,
-    value: "#383a40"
+    value: "#1a1d28"
   },
   {
     key: "chat-input-background-color-blur-disabled",
     category: ThemeCategory.Input,
-    value: "#383a40"
+    value: "#1a1d28"
   },
 
   // Markup bar
   {
     key: "chat-markup-bar-background-color",
     category: ThemeCategory.MarkupBar,
-    value: "#2b2d31"
+    value: "#141722"
   },
   {
     key: "chat-markup-bar-background-color-blur-disabled",
     category: ThemeCategory.MarkupBar,
-    value: "#2b2d31"
+    value: "#141722"
   },
 
   // Message
   {
     key: "message-hover-background-color",
     category: ThemeCategory.Message,
-    value: "rgba(2, 2, 2, 0.12)"
+    value: "rgba(122, 162, 255, 0.06)"
   },
   {
     key: "message-floating-options-background-color",
     category: ThemeCategory.Message,
-    value: "#111214"
+    value: "#0a0b12"
   },
 
   // Accent (Primary)
-  { key: "primary-color", category: ThemeCategory.Accent, value: "#5865f2" },
+  { key: "primary-color", category: ThemeCategory.Accent, value: "#7aa2ff" },
   {
     key: "primary-color-dark",
     category: ThemeCategory.Accent,
-    value: "#3c45a5"
+    value: "#3d5cb8"
   },
 
   // Alert
-  { key: "alert-color", category: ThemeCategory.Alert, value: "#ed4245" },
-  { key: "alert-color-dark", category: ThemeCategory.Alert, value: "#4a1c1d" },
+  { key: "alert-color", category: ThemeCategory.Alert, value: "#ff5c7a" },
+  { key: "alert-color-dark", category: ThemeCategory.Alert, value: "#4a1c28" },
 
   // Warn
   { key: "warn-color", category: ThemeCategory.Warn, value: "#f0b232" },
   { key: "warn-color-dark", category: ThemeCategory.Warn, value: "#3d3218" },
 
   // Success
-  { key: "success-color", category: ThemeCategory.Success, value: "#23a559" },
+  { key: "success-color", category: ThemeCategory.Success, value: "#3dd68c" },
   {
     key: "success-color-dark",
     category: ThemeCategory.Success,
-    value: "#1a3d28"
+    value: "#163d2a"
   },
 
   // Status
-  { key: "status-offline", category: ThemeCategory.Status, value: "#80848e" },
-  { key: "status-online", category: ThemeCategory.Status, value: "#23a559" },
+  { key: "status-offline", category: ThemeCategory.Status, value: "#6b7280" },
+  { key: "status-online", category: ThemeCategory.Status, value: "#3dd68c" },
   {
     key: "status-looking-to-play",
     category: ThemeCategory.Status,
-    value: "#3ba55c"
+    value: "#3dd68c"
   },
   {
     key: "status-away-from-keyboard",
@@ -131,70 +131,70 @@ const ThemeTokensBase = [
   {
     key: "status-do-not-disturb",
     category: ThemeCategory.Status,
-    value: "#f23f43"
+    value: "#ff5c7a"
   },
 
   // Text
-  { key: "text-color", category: ThemeCategory.Text, value: "#f2f3f5" },
+  { key: "text-color", category: ThemeCategory.Text, value: "#eef0f6" },
   {
     key: "content-color",
     category: ThemeCategory.Text,
-    value: "#dbdee1"
+    value: "#c5cad6"
   },
-  { key: "side-pane-text-color", category: ThemeCategory.Text, value: "#f2f3f5" },
+  { key: "side-pane-text-color", category: ThemeCategory.Text, value: "#eef0f6" },
   {
     key: "typing-indicator-color",
     category: ThemeCategory.Text,
-    value: "#f2f3f5"
+    value: "#eef0f6"
   },
   {
     key: "typing-indicator-secondary-color",
     category: ThemeCategory.Text,
-    value: "#b5bac1"
+    value: "#9aa3b5"
   },
 
   // Markup
   {
     key: "markup-code-background-color",
     category: ThemeCategory.Markup,
-    value: "rgba(255, 255, 255, 0.12)"
+    value: "rgba(255, 255, 255, 0.08)"
   },
   {
     key: "markup-mention-background-color",
     category: ThemeCategory.Markup,
-    value: "rgba(255, 255, 255, 0.1)"
+    value: "rgba(122, 162, 255, 0.16)"
   },
   {
     key: "markup-mention-background-color-hover",
     category: ThemeCategory.Markup,
-    value: "rgba(255, 255, 255, 0.12)"
+    value: "rgba(122, 162, 255, 0.24)"
   },
   {
     key: "markup-codeblock-background-color",
     category: ThemeCategory.Markup,
-    value: "rgba(255, 255, 255, 0.1)"
+    value: "rgba(0, 0, 0, 0.35)"
   },
   {
     key: "markup-spoiler-background-color",
     category: ThemeCategory.Markup,
-    value: "#1d1f20ff"
+    value: "#0c0d12ff"
   },
   {
     key: "markup-spoiler-background-color-hover",
     category: ThemeCategory.Markup,
-    value: "#2b2e30ff"
+    value: "#161822ff"
   },
 
   // Drawer
   {
     key: "drawer-item-background-color",
     category: ThemeCategory.Drawer,
-    value: "#404249"
+    value: "rgba(122, 162, 255, 0.14)"
   },
   {
     key: "drawer-item-hover-background-color",
     category: ThemeCategory.Drawer,
-    value: "#35373c"
+    value: "rgba(255, 255, 255, 0.05)"
   }
 ] as const;
 
@@ -265,6 +265,10 @@ export const themePresets: Record<string, ThemePreset> = {
   Default: {
     colors: DefaultTheme,
     maintainers: ["Superkitten", "Asraye"]
+  },
+  Concord: {
+    colors: DefaultTheme,
+    maintainers: ["local"]
   },
   "Discord Root": {
     colors: {
@@ -356,6 +360,15 @@ const dimmedColor = (color: string, opacity: number): string => {
 };
 
 updateTheme();
+
+const storedTheme = customColors();
+if (
+  storedTheme["primary-color"] === "#5865f2" ||
+  storedTheme["pane-color"] === "#313338"
+) {
+  setCustomColors({});
+  updateTheme();
+}
 
 export const defaultThemeCSSVars = themeVars(DefaultTheme);
 

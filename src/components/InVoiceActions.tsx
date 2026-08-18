@@ -15,16 +15,17 @@ import { VoiceAudioSettingsModal } from "./settings/VoiceAudioSettingsModal";
 import { t } from "@nerimity/i18lite";
 
 const InVoiceActionsContainer = styled(FlexColumn)`
-  background-color: #232428;
+  background: rgba(255, 255, 255, 0.03);
   margin: 8px;
-  margin-bottom: 8px;
-  border-top: 1px solid #23a559;
-  border-radius: 8px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
   flex-shrink: 0;
   padding-top: 8px;
   position: sticky;
-  bottom: 4px;
+  bottom: 6px;
   z-index: 11111111;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
 `;
 const DetailsContainer = styled(FlexColumn)`
   overflow: hidden;

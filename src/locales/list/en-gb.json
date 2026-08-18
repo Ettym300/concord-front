@@ -23,6 +23,7 @@
     "avatarAndBanner": {
       "avatar": "Avatar",
       "banner": "Banner",
+      "bannerMemberListHint": "Appears as a cover in the server member list.",
       "supportedFileTypes": "Supported: {{extensions}}, Max {{size}}",
       "browse": "Browse",
       "revert": "Revert",
@@ -1176,6 +1177,11 @@
   "informationDrawer": {
     "info": "Info",
     "files": "Files",
+    "tabs": {
+      "info": "Info",
+      "files": "Files",
+      "search": "Search"
+    },
     "searchBarPlaceholder": "Search {{username}}",
     "searchBarChannelPlaceholder": "Search in {{channelName}}",
     "sortLatest": "Latest",
@@ -1396,7 +1402,9 @@
   },
   "serverDrawer": {
     "joinedThisSessionNotice": "You'll see all notifications from this server.",
-    "joinedThisSessionNoticeSetToMentionsOnly": "Set to mentions only"
+    "joinedThisSessionNoticeSetToMentionsOnly": "Set to mentions only",
+    "voiceChannels": "Voice Channels",
+    "textChannels": "Text Channels"
   },
   "datetime": {
     "lessThanAMinuteAgo": "a few seconds ago",

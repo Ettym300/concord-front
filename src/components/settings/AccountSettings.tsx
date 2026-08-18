@@ -452,10 +452,10 @@ export function EditAccountPage(props: {
       <SettingsBlock
         icon="panorama"
         label={t("general.avatarAndBanner.banner")}
-        description={t("general.avatarAndBanner.supportedFileTypes", {
+        description={`${t("general.avatarAndBanner.bannerMemberListHint")} ${t("general.avatarAndBanner.supportedFileTypes", {
           extensions: "JPG, PNG, GIF, WEBP",
           size: "12MB"
-        })}
+        })}`}
       >
         <ImageSelector
           onChange={onBannerPick}

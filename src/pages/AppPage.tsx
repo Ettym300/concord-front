@@ -56,9 +56,11 @@ import { updateTitleAlert } from "@/common/BrowserTitle";
 
 const mobileMainPaneStyles = css`
   height: 100%;
-  && {
+    && {
     margin: 0;
     border-radius: 0px;
+    border: none;
+    box-shadow: none;
   }
 `;
 
