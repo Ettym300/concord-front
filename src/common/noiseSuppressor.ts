@@ -94,8 +94,15 @@ async function wrapWithNode(
     const { node, destroy } = await createNode(ctx);
     const source = ctx.createMediaStreamSource(input);
     const dest = ctx.createMediaStreamDestination();
+    dest.channelCount = 2;
+    dest.channelCountMode = "explicit";
+    dest.channelInterpretation = "speakers";
+    const merger = ctx.createChannelMerger(2);
     source.connect(node);
-    node.connect(dest);
+    // Worklet output is mono; HTMLAudio/WebRTC otherwise plays it only on the left.
+    node.connect(merger, 0, 0);
+    node.connect(merger, 0, 1);
+    merger.connect(dest);
 
     return {
       stream: dest.stream,
@@ -110,6 +117,7 @@ async function wrapWithNode(
         try {
           source.disconnect();
           node.disconnect();
+          merger.disconnect();
         } catch {
           // already disconnected
         }
