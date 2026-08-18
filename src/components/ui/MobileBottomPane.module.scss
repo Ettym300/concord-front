@@ -43,6 +43,12 @@
       opacity 0.2s,
       background-color 0.2s;
     corner-shape: squircle;
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
     &.selected {
       background-color: var(--primary-color);
       &:hover {
