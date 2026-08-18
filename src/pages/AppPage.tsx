@@ -8,6 +8,7 @@ import {
   Show
 } from "solid-js";
 import MainPaneHeader from "../components/main-pane-header/MainPaneHeader";
+import { FloatingLivePreview } from "../components/main-pane-header/voice-header/VoiceHeader";
 
 import {
   getStorageString,
@@ -217,21 +218,24 @@ export default function AppPage() {
   });
 
   return (
-    <DrawerLayout
-      Content={() => <MainPane />}
-      LeftDrawer={() => (
-        <CustomScrollbarProvider>
-          <LeftDrawer />
-        </CustomScrollbarProvider>
-      )}
-      RightDrawer={() => (
-        <CustomScrollbarProvider>
-          <RightDrawer />
-        </CustomScrollbarProvider>
-      )}
-    >
-      <MobileBottomPane />
-    </DrawerLayout>
+    <>
+      <DrawerLayout
+        Content={() => <MainPane />}
+        LeftDrawer={() => (
+          <CustomScrollbarProvider>
+            <LeftDrawer />
+          </CustomScrollbarProvider>
+        )}
+        RightDrawer={() => (
+          <CustomScrollbarProvider>
+            <RightDrawer />
+          </CustomScrollbarProvider>
+        )}
+      >
+        <MobileBottomPane />
+      </DrawerLayout>
+      <FloatingLivePreview />
+    </>
   );
 }
 

@@ -323,3 +323,75 @@
     flex-shrink: 0;
   }
 }
+
+.floatingLive {
+  position: fixed;
+  z-index: 120000;
+  right: 16px;
+  bottom: 16px;
+  width: min(380px, calc(100vw - 24px));
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  background: var(--pane-color);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+}
+
+.floatingLiveMobile {
+  right: 8px;
+  bottom: calc(var(--bottom-pane-gap) + 12px);
+}
+
+.floatingLiveBar {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 8px 12px;
+  overflow: hidden;
+  border: none;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 12px;
+  gap: 8px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.floatingLiveBar span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.floating {
+  position: relative;
+  z-index: auto;
+  top: auto;
+  right: auto;
+  left: auto;
+  overflow: hidden;
+  height: 220px !important;
+  min-height: 180px !important;
+  padding: 0;
+  border: none;
+  resize: none;
+  background-color: #0b0b0f;
+}
+
+.floating.videoStream {
+  height: 220px !important;
+  min-height: 180px !important;
+}
+
+.floating .voiceParticipants {
+  height: 100%;
+}
+
+.floating .voiceTile {
+  min-height: 0;
+}
+
+.floating .videoGrid {
+  padding: 6px;
+  gap: 6px;
+}

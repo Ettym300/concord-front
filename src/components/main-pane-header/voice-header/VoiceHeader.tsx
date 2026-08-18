@@ -19,7 +19,7 @@ import Avatar from "@/components/ui/Avatar";
 import { CustomLink } from "@/components/ui/CustomLink";
 import MemberContextMenu from "@/components/member-context-menu/MemberContextMenu";
 import RouterEndpoints from "@/common/RouterEndpoints";
-import { useParams } from "solid-navigator";
+import { useMatch, useNavigate, useParams } from "solid-navigator";
 import { VoiceUser } from "@/chat-api/store/useVoiceUsers";
 import { t } from "@nerimity/i18lite";
 
@@ -27,7 +27,7 @@ const [showParticipants, setShowParticipants] = createSignal(true);
 type VoiceViewMode = "gallery" | "focus";
 const [viewMode, setViewMode] = createSignal<VoiceViewMode>("gallery");
 
-export function VoiceHeader(props: { channelId?: string }) {
+export function VoiceHeader(props: { channelId?: string; floating?: boolean }) {
   let headerRef: HTMLDivElement | undefined;
   createEffect(() => {
     if (!showParticipants() && headerRef) {
@@ -70,6 +70,8 @@ export function VoiceHeader(props: { channelId?: string }) {
   const isSomeoneVideoStreaming = () =>
     channelVoiceUsers().find((v) => voiceUsers.videoEnabled(v.userId));
 
+  const displayMode = () => (props.floating ? "gallery" : viewMode());
+
   const gridColumns = () => {
     const count = channelVoiceUsers().length;
     if (count <= 1) return 1;
@@ -79,6 +81,10 @@ export function VoiceHeader(props: { channelId?: string }) {
   };
 
   const onTileClick = (userId: string) => {
+    if (props.floating) {
+      setSelectedUserId(userId);
+      return;
+    }
     if (viewMode() === "gallery" && voiceUsers.videoEnabled(userId)) {
       setSelectedUserId(userId);
       setViewMode("focus");
@@ -100,17 +106,18 @@ export function VoiceHeader(props: { channelId?: string }) {
           style.headerVoiceParticipants,
           conditionalClass(isSomeoneVideoStreaming(), style.videoStream),
           conditionalClass(
-            isSomeoneVideoStreaming() && viewMode() === "gallery",
+            isSomeoneVideoStreaming() && displayMode() === "gallery",
             style.galleryView
           ),
           conditionalClass(
-            isSomeoneVideoStreaming() && viewMode() === "focus",
+            isSomeoneVideoStreaming() && displayMode() === "focus",
             style.stageView
           ),
-          conditionalClass(!showParticipants(), style.miniView)
+          conditionalClass(!showParticipants(), style.miniView),
+          conditionalClass(props.floating, style.floating)
         )}
       >
-        <Show when={showParticipants()}>
+        <Show when={showParticipants() || props.floating}>
           <div class={style.top}>
             <Show when={!isSomeoneVideoStreaming()}>
               <VoiceParticipants
@@ -119,7 +126,7 @@ export function VoiceHeader(props: { channelId?: string }) {
                 channelId={props.channelId!}
               />
             </Show>
-            <Show when={isSomeoneVideoStreaming() && viewMode() === "gallery"}>
+            <Show when={isSomeoneVideoStreaming() && displayMode() === "gallery"}>
               <div
                 class={style.videoGrid}
                 style={{
@@ -137,7 +144,7 @@ export function VoiceHeader(props: { channelId?: string }) {
                 </For>
               </div>
             </Show>
-            <Show when={isSomeoneVideoStreaming() && viewMode() === "focus"}>
+            <Show when={isSomeoneVideoStreaming() && displayMode() === "focus"}>
               <div class={style.stageLayout}>
                 <Show when={selectedVoiceUser()}>
                   <div class={style.stageMain}>
@@ -165,10 +172,12 @@ export function VoiceHeader(props: { channelId?: string }) {
             </Show>
           </div>
         </Show>
-        <VoiceActions
-          channelId={props.channelId!}
-          showViewToggle={!!isSomeoneVideoStreaming()}
-        />
+        <Show when={!props.floating}>
+          <VoiceActions
+            channelId={props.channelId!}
+            showViewToggle={!!isSomeoneVideoStreaming()}
+          />
+        </Show>
       </div>
     </Show>
   );
@@ -637,5 +646,56 @@ function VoiceDeafenActions() {
         />
       </Show>
     </>
+  );
+}
+
+export function FloatingLivePreview() {
+  const { voiceUsers, channels, servers } = useStore();
+  const navigate = useNavigate();
+  const { isMobileWidth } = useWindowProperties();
+  const inboxMatch = useMatch(() => "/app/inbox/:id");
+  const serverMatch = useMatch(() => "/app/servers/:serverId/:channelId");
+
+  const callChannelId = () => voiceUsers.currentUser()?.channelId;
+  const viewingChannelId = () =>
+    serverMatch()?.params.channelId || inboxMatch()?.params.id;
+  const isAwayFromCall = () =>
+    !!callChannelId() && viewingChannelId() !== callChannelId();
+
+  const channel = () => channels.get(callChannelId()!);
+  const server = () => servers.get(channel()?.serverId!);
+
+  const label = () => {
+    const ch = channel();
+    if (!ch) return "";
+    if (server()) return `${server()!.name}#${ch.name}`;
+    return ch.recipient()?.username || ch.name || "";
+  };
+
+  const goToCall = () => {
+    const ch = channel();
+    if (!ch) return;
+    if (ch.serverId) {
+      navigate(RouterEndpoints.SERVER_MESSAGES(ch.serverId, ch.id));
+      return;
+    }
+    navigate(RouterEndpoints.INBOX_MESSAGES(ch.id));
+  };
+
+  return (
+    <Show when={isAwayFromCall()}>
+      <div
+        class={cn(
+          style.floatingLive,
+          conditionalClass(isMobileWidth(), style.floatingLiveMobile)
+        )}
+      >
+        <button type="button" class={style.floatingLiveBar} onClick={goToCall}>
+          <Icon name="videocam" size={14} />
+          <span>{label()}</span>
+        </button>
+        <VoiceHeader channelId={callChannelId()!} floating />
+      </div>
+    </Show>
   );
 }
