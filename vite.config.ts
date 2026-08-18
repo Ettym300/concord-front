@@ -41,8 +41,10 @@ export default defineConfig({
     }
   },
   optimizeDeps: {
-    include: ["@codemirror/state", "@codemirror/view"]
+    include: ["@codemirror/state", "@codemirror/view"],
+    exclude: ["@sapphi-red/web-noise-suppressor"]
   },
+  assetsInclude: ["**/*.wasm"],
   plugins: [
     excludeTextPage(),
     minifyi18nPlugin("./src/locales/list"),

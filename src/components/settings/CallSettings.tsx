@@ -23,6 +23,7 @@ import { toast } from "../ui/custom-portal/CustomPortal";
 import Checkbox from "../ui/Checkbox";
 import Block from "../ui/settings-block/Block";
 import { VoiceMicPreview } from "./VoiceMicPreview";
+import { preloadNoiseSuppressor } from "@/common/noiseSuppressor";
 
 const Container = styled("div")`
   display: flex;
@@ -94,16 +95,15 @@ export function InputDevices() {
         key: "echo",
         default: true
       });
-    if (supported.noiseSuppression)
-      supportedList.push({
-        label: t("settings.call.inputConstraints.noiseSuppression"),
-        description: t(
-          "settings.call.inputConstraints.noiseSuppressionDescription"
-        ),
-        icon: "noise_aware",
-        key: "noise",
-        default: true
-      });
+    supportedList.push({
+      label: t("settings.call.inputConstraints.noiseSuppression"),
+      description: t(
+        "settings.call.inputConstraints.noiseSuppressionDescription"
+      ),
+      icon: "noise_aware",
+      key: "noise",
+      default: true
+    });
     if (supported.autoGainControl)
       supportedList.push({
         label: t("settings.call.inputConstraints.autoGainControl"),
@@ -125,6 +125,7 @@ export function InputDevices() {
   };
 
   onMount(async () => {
+    void preloadNoiseSuppressor();
     updateSupportedConstraints();
     const activeMicTrack =
       voiceUsers.currentUser()?.audioStream?.getAudioTracks()[0];
@@ -182,7 +183,11 @@ export function InputDevices() {
                 ...constraints(),
                 [constraint.key]: val
               });
-              void voiceUsers.applyMicConstraints();
+              if (constraint.key === "noise") {
+                void voiceUsers.restartMic();
+              } else {
+                void voiceUsers.applyMicConstraints();
+              }
             }}
           />
         )}

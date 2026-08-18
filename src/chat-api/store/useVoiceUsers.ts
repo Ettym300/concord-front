@@ -20,6 +20,7 @@ import { downKeys, useGlobalKey } from "@/common/GlobalKey";
 import { arrayEquals } from "@/common/arrayEquals";
 import { LazySimplePeer } from "@/components/LazySimplePeer";
 import { log } from "@/common/logger";
+import { wrapMicWithNoiseSuppression, preloadNoiseSuppressor } from "@/common/noiseSuppressor";
 
 const createIceServers = () => [
   ...(getStorageBoolean(StorageKeys.voiceUseTurnServers, true)
@@ -87,9 +88,12 @@ const [deafened, setDeafened] = createStore({
 interface CurrentVoiceUser {
   channelId: string;
   audioStream: MediaStream | null;
+  originalAudioStream?: MediaStream | null;
   videoStream: MediaStream | null;
   vadInstance?: ReturnType<typeof vad>;
   vadAudioStream?: MediaStream | null;
+  micCleanup?: () => void;
+  micMuted?: boolean;
 }
 const [currentVoiceUser, setCurrentVoiceUser] = createSignal<
   CurrentVoiceUser | undefined
@@ -97,6 +101,7 @@ const [currentVoiceUser, setCurrentVoiceUser] = createSignal<
 
 const { start, stop } = useGlobalKey();
 const [voiceMode] = useVoiceInputMode();
+let enableMicGeneration = 0;
 
 createEffect(
   on(currentVoiceUser, (current) => {
@@ -183,10 +188,15 @@ const setCurrentChannelId = (channelId: string | null, reconnect = false) => {
     });
   }
   if (!channelId) {
+    enableMicGeneration++;
     setCurrentVoiceUser(undefined);
     setDeafened("wasMicEnabled", false);
 
+    current?.micCleanup?.();
     current?.audioStream?.getTracks().forEach((track) => {
+      track.stop();
+    });
+    current?.originalAudioStream?.getTracks().forEach((track) => {
       track.stop();
     });
     current?.videoStream?.getTracks().forEach((track) => {
@@ -195,6 +205,7 @@ const setCurrentChannelId = (channelId: string | null, reconnect = false) => {
 
     return;
   }
+  void preloadNoiseSuppressor();
   if (!reconnect) {
     setCurrentVoiceUser({
       channelId,
@@ -565,6 +576,7 @@ const pushVoiceUserTrack = (
 };
 
 const disableMic = () => {
+  enableMicGeneration++;
   const userId = useAccount().user()?.id!;
   const current = currentVoiceUser();
   if (!current) return;
@@ -576,11 +588,14 @@ const disableMic = () => {
       track.stop();
     });
     removeStream(current.audioStream);
+    current.micCleanup?.();
     setCurrentVoiceUser({
       ...current,
       audioStream: null,
+      originalAudioStream: null,
       vadInstance: undefined,
-      vadAudioStream: null
+      vadAudioStream: null,
+      micCleanup: undefined
     });
     setVoiceUsers(current.channelId, userId, {
       voiceActivity: false
@@ -599,7 +614,8 @@ const getStoredMicConstraints = (): MediaTrackConstraints => {
 
   return {
     echoCancellation: constraints.echo,
-    noiseSuppression: constraints.noise,
+    // Browser NS is weak compared to Discord. Neural filter runs after capture.
+    noiseSuppression: false,
     autoGainControl: constraints.gain
   };
 };
@@ -662,8 +678,9 @@ const applyConstraintsToStream = async (stream?: MediaStream | null) => {
 const applyMicConstraints = async () => {
   const current = currentVoiceUser();
   if (!current?.audioStream) return;
-  await applyConstraintsToStream(current.audioStream);
-  await applyConstraintsToStream(current.vadAudioStream);
+  await applyConstraintsToStream(
+    current.originalAudioStream ?? current.audioStream
+  );
 };
 
 const applyOutputDevice = () => {
@@ -707,7 +724,26 @@ const enableMic = async () => {
   if (current.audioStream) {
     return;
   }
-  const stream = await getUserMic();
+  const generation = ++enableMicGeneration;
+  const rawStream = await getUserMic();
+  const noiseEnabled = getStorageObject(StorageKeys.voiceMicConstraints, {
+    echo: true,
+    noise: true,
+    gain: true
+  }).noise;
+  const wrapped = await wrapMicWithNoiseSuppression(rawStream, noiseEnabled);
+
+  const stillCurrent = currentVoiceUser();
+  if (
+    generation !== enableMicGeneration ||
+    !stillCurrent ||
+    stillCurrent.channelId !== current.channelId ||
+    stillCurrent.audioStream
+  ) {
+    wrapped.dispose();
+    return;
+  }
+  const stream = wrapped.stream;
 
   let vadStream: MediaStream | undefined;
   let vadInstance: ReturnType<typeof vad> | undefined;
@@ -717,7 +753,7 @@ const enableMic = async () => {
   }
 
   if (voiceMode() === "VOICE_ACTIVITY") {
-    vadStream = await getUserMic(false);
+    vadStream = stream.clone();
     vadInstance = createVadInstance(vadStream, stream);
   } else if (voiceMode() === "OPEN") {
     vadInstance = createVadInstance(stream);
@@ -726,10 +762,12 @@ const enableMic = async () => {
   addStreamToPeers(stream);
 
   setCurrentVoiceUser({
-    ...current,
+    ...stillCurrent,
     audioStream: stream,
+    originalAudioStream: wrapped.originalStream,
     vadInstance,
-    vadAudioStream: vadStream
+    vadAudioStream: vadStream,
+    micCleanup: wrapped.dispose
   });
 };
 

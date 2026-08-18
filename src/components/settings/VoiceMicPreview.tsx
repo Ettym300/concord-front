@@ -14,6 +14,7 @@ import {
   getStorageString,
   useLocalStorage
 } from "@/common/localStorage";
+import { wrapMicWithNoiseSuppression } from "@/common/noiseSuppressor";
 import SettingsBlock from "../ui/settings-block/SettingsBlock";
 import Button from "../ui/Button";
 import { FlexRow } from "../ui/Flexbox";
@@ -114,7 +115,7 @@ function getPreviewConstraints(): MediaTrackConstraints {
   const deviceId = getStorageString(StorageKeys.inputDeviceId, undefined);
   const audio: MediaTrackConstraints = {
     echoCancellation: false,
-    noiseSuppression: constraints.noise,
+    noiseSuppression: false,
     autoGainControl: constraints.gain
   };
   if (deviceId) {
@@ -152,6 +153,7 @@ export function VoiceMicPreview(props: {
 
   let previewStream: MediaStream | null = null;
   let ownsStream = false;
+  let disposeMic: (() => void) | null = null;
   let audioContext: AudioContext | null = null;
   let analyser: AnalyserNode | null = null;
   let loopback: HTMLAudioElement | null = null;
@@ -175,6 +177,8 @@ export function VoiceMicPreview(props: {
     analyser = null;
     void audioContext?.close();
     audioContext = null;
+    disposeMic?.();
+    disposeMic = null;
     if (ownsStream) {
       previewStream?.getTracks().forEach((track) => track.stop());
     }
@@ -212,6 +216,8 @@ export function VoiceMicPreview(props: {
     analyser = null;
     void audioContext?.close();
     audioContext = null;
+    disposeMic?.();
+    disposeMic = null;
     if (ownsStream) {
       previewStream?.getTracks().forEach((track) => track.stop());
     }
@@ -220,9 +226,9 @@ export function VoiceMicPreview(props: {
     setLevel(0);
     setError(null);
 
-    let stream: MediaStream;
+    let rawStream: MediaStream;
     try {
-      stream = await navigator.mediaDevices.getUserMedia({
+      rawStream = await navigator.mediaDevices.getUserMedia({
         audio: getPreviewConstraints(),
         video: false
       });
@@ -232,13 +238,24 @@ export function VoiceMicPreview(props: {
     }
 
     if (id !== generation) {
-      stream.getTracks().forEach((track) => track.stop());
+      rawStream.getTracks().forEach((track) => track.stop());
       return;
     }
 
-    previewStream = stream;
+    const wrapped = await wrapMicWithNoiseSuppression(
+      rawStream,
+      props.constraints.noise
+    );
+
+    if (id !== generation) {
+      wrapped.dispose();
+      return;
+    }
+
+    previewStream = wrapped.stream;
     ownsStream = true;
-    startMeter(stream);
+    disposeMic = wrapped.dispose;
+    startMeter(wrapped.stream);
   };
 
   const toggleTest = async () => {

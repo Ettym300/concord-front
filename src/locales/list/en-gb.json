@@ -739,7 +739,7 @@
         "echoCancelation": "Echo Cancellation",
         "echoCancelationDescription": "Prevents the microphone from picking up sound from the speakers.",
         "noiseSuppression": "Noise Suppression",
-        "noiseSuppressionDescription": "Filters out constant background noise (fans, hums).",
+        "noiseSuppressionDescription": "Removes background noise (keyboard, fan, room) so others mainly hear your voice.",
         "autoGainControl": "Auto Gain Control",
         "autoGainControlDescription": "Automatically adjusts volume levels to maintain a consistent signal."
       },

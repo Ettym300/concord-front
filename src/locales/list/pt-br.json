@@ -550,7 +550,7 @@
                 "echoCancelation": "Cancelamento de eco",
                 "echoCancelationDescription": "Impede que o microfone capte o som dos alto-falantes.",
                 "noiseSuppression": "Supressão de ruído",
-                "noiseSuppressionDescription": "Filtra ruídos de fundo constantes (ventiladores, zumbidos).",
+                "noiseSuppressionDescription": "Remove ruído de fundo (teclado, ventilador, ambiente) para os outros ouvirem principalmente a sua voz.",
                 "autoGainControl": "Controle automático de ganho",
                 "autoGainControlDescription": "Ajusta automaticamente os níveis de volume para manter um sinal estável."
             },
