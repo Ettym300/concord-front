@@ -52,9 +52,43 @@ import {
 import { lazyLoadEmojis } from "@/emoji";
 import { useReminders } from "@/components/useReminders";
 import { FriendStatus } from "@/chat-api/RawData";
-import { updateTitleAlert } from "@/common/BrowserTitle";
+import { showLiveChat } from "@/components/main-pane-header/voice-header/liveLayout";
 
-const mobileMainPaneStyles = css`
+const liveTheaterStyles = css`
+  &&.liveTheater {
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  &&.liveTheater.liveChatOpen {
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 340px);
+  }
+  &&.liveTheater :global(.main-pane-header-bar) {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+  &&.liveTheater :global(.voice-stage) {
+    grid-column: 1;
+    grid-row: 2;
+    height: 100% !important;
+    min-height: 0;
+    max-height: none;
+    resize: none;
+  }
+  &&.liveTheater :global(.messagePane) {
+    display: none;
+    grid-column: 2;
+    grid-row: 2;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    border-left: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  &&.liveTheater.liveChatOpen :global(.messagePane) {
+    display: flex;
+  }
+`;
   height: 100%;
     && {
     margin: 0;
@@ -303,6 +337,7 @@ function LeftDrawer() {
 function MainPane() {
   const windowProperties = useWindowProperties();
   const { hasRightDrawer, hasLeftDrawer } = useDrawer();
+  const { header, voiceUsers } = useStore();
   const [outerPaneElement, setOuterPaneElement] = createSignal<
     HTMLDivElement | undefined
   >(undefined);
@@ -321,8 +356,13 @@ function MainPane() {
     windowProperties.setPaneWidth(width());
   });
 
-  const isMobileWithOrHasRightDrawer = () => {
-    return windowProperties.isMobileWidth() || hasRightDrawer();
+  const isLiveTheater = () => {
+    if (windowProperties.isMobileWidth()) return false;
+    const channelId = header.details().channelId;
+    if (!channelId) return false;
+    return voiceUsers
+      .getVoiceUsersByChannelId(channelId)
+      .some((voiceUser) => voiceUsers.videoEnabled(voiceUser.userId));
   };
 
   return (
@@ -336,10 +376,13 @@ function MainPane() {
           hasRightDrawer={hasRightDrawer()}
           class={classNames(
             "main-pane-container",
+            liveTheaterStyles,
             conditionalClass(
               windowProperties.isMobileWidth(),
               mobileMainPaneStyles
-            )
+            ),
+            conditionalClass(isLiveTheater(), "liveTheater"),
+            conditionalClass(isLiveTheater() && showLiveChat(), "liveChatOpen")
           )}
         >
           <MainPaneHeader />

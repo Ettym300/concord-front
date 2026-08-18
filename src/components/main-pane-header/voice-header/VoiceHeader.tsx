@@ -22,6 +22,8 @@ import RouterEndpoints from "@/common/RouterEndpoints";
 import { useParams } from "solid-navigator";
 import { VoiceUser } from "@/chat-api/store/useVoiceUsers";
 import { t } from "@nerimity/i18lite";
+import { useDrawer } from "@/components/ui/drawer/Drawer";
+import { showLiveChat, setShowLiveChat, toggleLiveChat } from "./liveLayout";
 
 const [showParticipants, setShowParticipants] = createSignal(true);
 type VoiceViewMode = "gallery" | "focus";
@@ -70,6 +72,16 @@ export function VoiceHeader(props: { channelId?: string }) {
   const isSomeoneVideoStreaming = () =>
     channelVoiceUsers().find((v) => voiceUsers.videoEnabled(v.userId));
 
+  createEffect(
+    on(
+      () => !!voiceUsers.currentUser()?.videoStream,
+      (sharing, wasSharing) => {
+        if (sharing) setShowLiveChat(false);
+        else if (wasSharing) setShowLiveChat(true);
+      }
+    )
+  );
+
   const gridColumns = () => {
     const count = channelVoiceUsers().length;
     if (count <= 1) return 1;
@@ -90,6 +102,7 @@ export function VoiceHeader(props: { channelId?: string }) {
       <div
         ref={headerRef}
         class={cn(
+          "voice-stage",
           style.headerVoiceParticipants,
           conditionalClass(isSomeoneVideoStreaming(), style.videoStream),
           conditionalClass(
@@ -464,7 +477,8 @@ function VoiceActions(props: {
 }) {
   const { voiceUsers, channels } = useStore();
   const { createPortal } = useCustomPortal();
-  const { isMobileAgent } = useWindowProperties();
+  const { isMobileAgent, isMobileWidth } = useWindowProperties();
+  const drawer = useDrawer();
 
   const currentVoiceUser = () => voiceUsers.currentUser();
 
@@ -522,6 +536,48 @@ function VoiceActions(props: {
             setViewMode(viewMode() === "gallery" ? "focus" : "gallery")
           }
         />
+      </Show>
+      <Show when={props.showViewToggle && !isMobileWidth()}>
+        <Button
+          iconName="forum"
+          color={showLiveChat() ? "var(--primary-color)" : "rgba(255,255,255,0.6)"}
+          hoverText={
+            showLiveChat()
+              ? t("mainPaneHeader.voice.hideChat")
+              : t("mainPaneHeader.voice.showChat")
+          }
+          onClick={toggleLiveChat}
+        />
+        <Button
+          iconName="menu"
+          color={
+            drawer.hideLeftDrawer()
+              ? "rgba(255,255,255,0.6)"
+              : "var(--primary-color)"
+          }
+          hoverText={
+            drawer.hideLeftDrawer()
+              ? t("mainPaneHeader.voice.showChannels")
+              : t("mainPaneHeader.voice.hideChannels")
+          }
+          onClick={drawer.toggleHideLeftDrawer}
+        />
+        <Show when={drawer.hasRightDrawer()}>
+          <Button
+            iconName="group"
+            color={
+              drawer.hideRightDrawer()
+                ? "rgba(255,255,255,0.6)"
+                : "var(--primary-color)"
+            }
+            hoverText={
+              drawer.hideRightDrawer()
+                ? t("mainPaneHeader.voice.showMembers")
+                : t("mainPaneHeader.voice.hideMembers")
+            }
+            onClick={drawer.toggleHideRightDrawer}
+          />
+        </Show>
       </Show>
       <Show when={!isInCall()}>
         <Button

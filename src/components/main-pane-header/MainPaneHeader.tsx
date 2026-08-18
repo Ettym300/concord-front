@@ -139,6 +139,7 @@ export default function MainPaneHeader() {
         onMouseOver={() => setHovered(true)}
         onMouseOut={() => setHovered(false)}
         class={classNames(
+          "main-pane-header-bar",
           styles.header,
           conditionalClass(isMobileWidth(), styles.isMobile)
         )}

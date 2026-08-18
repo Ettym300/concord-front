@@ -1235,6 +1235,12 @@
             "fullscreen": "Tela cheia",
             "deafened": "Ensurdecido(a)",
             "audioSettings": "Configurações de áudio",
+            "hideChat": "Ocultar chat",
+            "showChat": "Mostrar chat",
+            "hideChannels": "Ocultar canais",
+            "showChannels": "Mostrar canais",
+            "hideMembers": "Ocultar membros",
+            "showMembers": "Mostrar membros",
             "webcamModal": {
                 "title": "Compartilhamento de webcam",
                 "error": "Não foi possível compartilhar a câmera",

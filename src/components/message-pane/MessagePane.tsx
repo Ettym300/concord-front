@@ -233,7 +233,7 @@ function MessagePane() {
   const server = () => servers.get(channel()?.serverId!);
 
   return (
-    <div class={styles.messagePane}>
+    <div class={cn(styles.messagePane, "messagePane")}>
       <Portal>
         <Show when={isDragging()}>
           <DropOverlay />
