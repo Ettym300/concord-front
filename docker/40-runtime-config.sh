@@ -20,3 +20,40 @@ window.__CONCORD_ENV__ = {
   VITE_EMAIL_CONFIRMATION_ENABLED: "$(json_quote "${VITE_EMAIL_CONFIRMATION_ENABLED:-false}")"
 };
 EOF
+
+API_URL="${VITE_SERVER_URL%/}"
+API_PROXY=""
+if [ -n "$API_URL" ]; then
+  API_PROXY="  location /api/ {
+    proxy_pass ${API_URL}/api/;
+    proxy_http_version 1.1;
+    proxy_set_header Host \$proxy_host;
+    proxy_set_header X-Real-IP \$remote_addr;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+    proxy_ssl_server_name on;
+  }"
+fi
+
+cat > /etc/nginx/conf.d/default.conf <<EOF
+server {
+  listen 80;
+  server_name _;
+  root /usr/share/nginx/html;
+  index index.html;
+  client_max_body_size 20M;
+
+  gzip on;
+  gzip_types text/plain text/css application/javascript application/json image/svg+xml;
+
+  location = /runtime-config.js {
+    add_header Cache-Control "no-store";
+  }
+
+${API_PROXY}
+
+  location / {
+    try_files \$uri \$uri/ /index.html;
+  }
+}
+EOF

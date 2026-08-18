@@ -19,7 +19,10 @@ const str = (key: string, fallback = "") => {
 
 export default {
   get SERVER_URL() {
-    return str("VITE_SERVER_URL");
+    const configured = str("VITE_SERVER_URL");
+    if (import.meta.env.DEV) return configured;
+    if (typeof window !== "undefined") return window.location.origin;
+    return configured;
   },
   get WS_URL() {
     return str("VITE_WS_URL");
