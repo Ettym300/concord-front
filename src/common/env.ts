@@ -32,7 +32,10 @@ export default {
     return configured;
   },
   get WS_URL() {
-    return withoutSlash(str("VITE_WS_URL"));
+    const configured = withoutSlash(str("VITE_WS_URL"));
+    if (import.meta.env.DEV) return configured;
+    if (typeof window !== "undefined") return window.location.origin;
+    return configured;
   },
   get APP_URL() {
     const configured = withoutSlash(str("VITE_APP_URL"));

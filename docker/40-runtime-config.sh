@@ -50,6 +50,24 @@ if [ -n "$CDN_URL" ]; then
   }"
 fi
 
+WS_URL="${VITE_WS_URL%/}"
+WS_PROXY=""
+if [ -n "$WS_URL" ]; then
+  WS_PROXY="  location /socket.io/ {
+    proxy_pass ${WS_URL}/socket.io/;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade \$http_upgrade;
+    proxy_set_header Connection \"upgrade\";
+    proxy_set_header Host \$proxy_host;
+    proxy_set_header X-Real-IP \$remote_addr;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+    proxy_read_timeout 86400;
+    proxy_send_timeout 86400;
+    proxy_ssl_server_name on;
+  }"
+fi
+
 cat > /etc/nginx/conf.d/default.conf <<EOF
 server {
   listen 80;
@@ -68,6 +86,8 @@ server {
 ${API_PROXY}
 
 ${CDN_PROXY}
+
+${WS_PROXY}
 
   location / {
     try_files \$uri \$uri/ /index.html;

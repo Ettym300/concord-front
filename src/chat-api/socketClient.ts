@@ -79,7 +79,8 @@ const socket =
     ? new ReactSocketIO(env.WS_URL || env.SERVER_URL)
     : io(env.WS_URL || env.SERVER_URL, {
         transports: ["websocket"],
-        autoConnect: false
+        autoConnect: false,
+        path: "/socket.io"
       });
 
 let token: undefined | string;

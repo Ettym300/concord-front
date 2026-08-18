@@ -298,7 +298,7 @@ const removeAllPeers = (channelIdToRemove?: string) => {
 };
 
 const getVoiceUsersByChannelId = (id: string) => {
-  return Object.values(voiceUsers[id] || {}) as VoiceUser[];
+  return Object.values(voiceUsers[id] || {}).filter(Boolean) as VoiceUser[];
 };
 
 const getVoiceUser = (channelId?: string, userId?: string) => {
