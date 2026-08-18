@@ -52,54 +52,7 @@ import {
 import { lazyLoadEmojis } from "@/emoji";
 import { useReminders } from "@/components/useReminders";
 import { FriendStatus } from "@/chat-api/RawData";
-import { showLiveChat } from "@/components/main-pane-header/voice-header/liveLayout";
 import { updateTitleAlert } from "@/common/BrowserTitle";
-
-const liveTheaterStyles = css`
-  &&.liveTheater {
-    overflow: hidden !important;
-    display: flex !important;
-    flex-direction: column !important;
-    flex: 1 1 0 !important;
-    flex-shrink: 1 !important;
-    width: 100%;
-    min-height: 0;
-  }
-  &&.liveTheater :global(.voice-stage) {
-    position: relative !important;
-    top: auto !important;
-    overflow: hidden !important;
-    flex: 1 0 auto;
-    width: 100%;
-    height: calc(100dvh - 80px) !important;
-    min-height: 420px !important;
-    max-height: none !important;
-    resize: none !important;
-  }
-  &&.liveTheater :global(.messagePane) {
-    display: none;
-    min-width: 0;
-    min-height: 0;
-    overflow: hidden;
-    border-left: 1px solid rgba(255, 255, 255, 0.06);
-  }
-  &&.liveTheater.liveChatOpen :global(.messagePane) {
-    display: flex;
-    flex: 0 0 360px;
-    width: 360px;
-  }
-  &&.liveTheater.liveChatOpen {
-    flex-direction: row !important;
-    flex-wrap: wrap;
-  }
-  &&.liveTheater.liveChatOpen :global(.main-pane-header-bar) {
-    flex: 1 1 100%;
-  }
-  &&.liveTheater :global(.custom-scrollbar),
-  &&.liveTheater :global([class*="CustomScrollbar"]) {
-    display: none;
-  }
-`;
 
 const mobileMainPaneStyles = css`
   height: 100%;
@@ -121,9 +74,6 @@ const OuterMainPaneContainer = styled("div")`
   display: flex;
   flex-direction: column;
   flex: 1;
-  width: 100%;
-  min-width: 0;
-  min-height: 0;
 `;
 
 const MainPaneContainer = styled("div")<MainPaneContainerProps>`
@@ -353,7 +303,6 @@ function LeftDrawer() {
 function MainPane() {
   const windowProperties = useWindowProperties();
   const { hasRightDrawer, hasLeftDrawer } = useDrawer();
-  const { header, voiceUsers } = useStore();
   const [outerPaneElement, setOuterPaneElement] = createSignal<
     HTMLDivElement | undefined
   >(undefined);
@@ -372,15 +321,6 @@ function MainPane() {
     windowProperties.setPaneWidth(width());
   });
 
-  const isLiveTheater = () => {
-    if (windowProperties.isMobileWidth()) return false;
-    const channelId = header.details().channelId;
-    if (!channelId) return false;
-    return voiceUsers
-      .getVoiceUsersByChannelId(channelId)
-      .some((voiceUser) => voiceUsers.videoEnabled(voiceUser.userId));
-  };
-
   return (
     <OuterMainPaneContainer ref={setOuterPaneElement}>
       <CustomScrollbarProvider>
@@ -392,18 +332,15 @@ function MainPane() {
           hasRightDrawer={hasRightDrawer()}
           class={classNames(
             "main-pane-container",
-            liveTheaterStyles,
             conditionalClass(
               windowProperties.isMobileWidth(),
               mobileMainPaneStyles
-            ),
-            conditionalClass(isLiveTheater(), "liveTheater"),
-            conditionalClass(isLiveTheater() && showLiveChat(), "liveChatOpen")
+            )
           )}
         >
           <MainPaneHeader />
           <Outlet name="mainPane" />
-          <Show when={!windowProperties.isMobileAgent() && !isLiveTheater()}>
+          <Show when={!windowProperties.isMobileAgent()}>
             <CustomScrollbar
               scrollElement={mainPaneEl()}
               class={css`

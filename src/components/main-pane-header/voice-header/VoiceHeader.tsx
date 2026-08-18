@@ -22,27 +22,25 @@ import RouterEndpoints from "@/common/RouterEndpoints";
 import { useParams } from "solid-navigator";
 import { VoiceUser } from "@/chat-api/store/useVoiceUsers";
 import { t } from "@nerimity/i18lite";
-import { useDrawer } from "@/components/ui/drawer/Drawer";
-import { showLiveChat, setShowLiveChat, toggleLiveChat } from "./liveLayout";
 
 const [showParticipants, setShowParticipants] = createSignal(true);
 type VoiceViewMode = "gallery" | "focus";
-const [viewMode, setViewMode] = createSignal<VoiceViewMode>("focus");
+const [viewMode, setViewMode] = createSignal<VoiceViewMode>("gallery");
 
 export function VoiceHeader(props: { channelId?: string }) {
   let headerRef: HTMLDivElement | undefined;
+  createEffect(() => {
+    if (!showParticipants() && headerRef) {
+      headerRef.style.height = "";
+      headerRef.style.minHeight = "";
+    }
+  });
   const { voiceUsers } = useStore();
 
   const [selectedUserId, setSelectedUserId] = createSignal<null | string>(null);
 
-  const channelId = () =>
-    props.channelId || voiceUsers.currentUser()?.channelId;
-
-  const channelVoiceUsers = () => {
-    const id = channelId();
-    if (!id) return [];
-    return voiceUsers.getVoiceUsersByChannelId(id);
-  };
+  const channelVoiceUsers = () =>
+    voiceUsers.getVoiceUsersByChannelId(props.channelId!);
   const videoStreamingUsers = () =>
     channelVoiceUsers().filter((v) => voiceUsers.videoEnabled(v.userId));
 
@@ -72,32 +70,6 @@ export function VoiceHeader(props: { channelId?: string }) {
   const isSomeoneVideoStreaming = () =>
     channelVoiceUsers().find((v) => voiceUsers.videoEnabled(v.userId));
 
-  createEffect(() => {
-    const el = headerRef;
-    if (!el) return;
-    if (isSomeoneVideoStreaming()) {
-      el.style.setProperty("height", "calc(100dvh - 80px)", "important");
-      el.style.setProperty("min-height", "420px", "important");
-      el.style.setProperty("max-height", "none", "important");
-      el.style.resize = "none";
-    } else {
-      el.style.removeProperty("height");
-      el.style.removeProperty("min-height");
-      el.style.removeProperty("max-height");
-      el.style.resize = "";
-    }
-  });
-
-  createEffect(
-    on(
-      () => !!isSomeoneVideoStreaming(),
-      (streaming, wasStreaming) => {
-        if (streaming && !wasStreaming) setShowLiveChat(false);
-        else if (!streaming && wasStreaming) setShowLiveChat(true);
-      }
-    )
-  );
-
   const gridColumns = () => {
     const count = channelVoiceUsers().length;
     if (count <= 1) return 1;
@@ -114,7 +86,7 @@ export function VoiceHeader(props: { channelId?: string }) {
   };
 
   return (
-    <Show when={channelVoiceUsers().length && isSomeoneVideoStreaming()}>
+    <Show when={channelVoiceUsers().length}>
       <div
         ref={headerRef}
         class={cn(
@@ -138,7 +110,7 @@ export function VoiceHeader(props: { channelId?: string }) {
               <VoiceParticipants
                 onClick={onTileClick}
                 selectedUserId={selectedUserId()}
-                channelId={channelId()!}
+                channelId={props.channelId!}
               />
             </Show>
             <Show when={isSomeoneVideoStreaming() && viewMode() === "gallery"}>
@@ -187,7 +159,7 @@ export function VoiceHeader(props: { channelId?: string }) {
           </div>
         </Show>
         <VoiceActions
-          channelId={channelId()!}
+          channelId={props.channelId!}
           showViewToggle={!!isSomeoneVideoStreaming()}
         />
       </div>
@@ -510,8 +482,7 @@ function VoiceActions(props: {
 }) {
   const { voiceUsers, channels } = useStore();
   const { createPortal } = useCustomPortal();
-  const { isMobileAgent, isMobileWidth } = useWindowProperties();
-  const drawer = useDrawer();
+  const { isMobileAgent } = useWindowProperties();
 
   const currentVoiceUser = () => voiceUsers.currentUser();
 
@@ -569,48 +540,6 @@ function VoiceActions(props: {
             setViewMode(viewMode() === "gallery" ? "focus" : "gallery")
           }
         />
-      </Show>
-      <Show when={props.showViewToggle && !isMobileWidth()}>
-        <Button
-          iconName="forum"
-          color={showLiveChat() ? "var(--primary-color)" : "rgba(255,255,255,0.6)"}
-          hoverText={
-            showLiveChat()
-              ? t("mainPaneHeader.voice.hideChat")
-              : t("mainPaneHeader.voice.showChat")
-          }
-          onClick={toggleLiveChat}
-        />
-        <Button
-          iconName="menu"
-          color={
-            drawer.hideLeftDrawer()
-              ? "rgba(255,255,255,0.6)"
-              : "var(--primary-color)"
-          }
-          hoverText={
-            drawer.hideLeftDrawer()
-              ? t("mainPaneHeader.voice.showChannels")
-              : t("mainPaneHeader.voice.hideChannels")
-          }
-          onClick={drawer.toggleHideLeftDrawer}
-        />
-        <Show when={drawer.hasRightDrawer()}>
-          <Button
-            iconName="group"
-            color={
-              drawer.hideRightDrawer()
-                ? "rgba(255,255,255,0.6)"
-                : "var(--primary-color)"
-            }
-            hoverText={
-              drawer.hideRightDrawer()
-                ? t("mainPaneHeader.voice.showMembers")
-                : t("mainPaneHeader.voice.hideMembers")
-            }
-            onClick={drawer.toggleHideRightDrawer}
-          />
-        </Show>
       </Show>
       <Show when={!isInCall()}>
         <Button
