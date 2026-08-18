@@ -25,8 +25,8 @@ export function ChangelogModal(props: { close: () => void }) {
     <Button
       href={
         isRelease
-          ? "https://github.com/Nerimity/Nerimity-Web/releases"
-          : "https://github.com/Nerimity/nerimity-web/commits/main"
+          ? "https://github.com/Ettym200/concord-front/releases"
+          : "https://github.com/Ettym200/concord-front/commits/main"
       }
       target="_blank"
       rel="noopener noreferrer"

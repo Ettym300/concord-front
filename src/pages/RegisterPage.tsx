@@ -145,7 +145,7 @@ export default function RegisterPage() {
             onSubmit={registerClicked}
           >
             <TitleContainer>
-              {t("registerPage.title", { appName: "Nerimity" })}
+              {t("registerPage.title", { appName: "Concord" })}
             </TitleContainer>
             <NoticesContainer gap={5}>
               <span style={{ "margin-bottom": "6px" }}>
@@ -205,7 +205,7 @@ export default function RegisterPage() {
               error={error()}
               onText={setConfirmPassword}
             />
-            <Show when={!env.DEV_MODE}>
+            <Show when={!env.DEV_MODE && env.TURNSTILE_SITEKEY}>
               <Turnstile
                 ref={turnstileRef}
                 sitekey={env.TURNSTILE_SITEKEY}

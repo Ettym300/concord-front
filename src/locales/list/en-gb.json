@@ -76,11 +76,11 @@
     "by": "By",
     "deletionNotice": "Your account and data will be deleted in 15 days",
     "ipBanned": "Your IP is banned.",
-    "ipBanNotice": "Someone with the same IP has been suspended from Nerimity. Your account is not affected."
+    "ipBanNotice": "Someone with the same IP has been suspended from Concord. Your account is not affected."
   },
   "homePage": {
     "slogan": "A modern and sleek chat app.",
-    "subslogan": "Nerimity offers an elegant and feature-rich experience that sets it apart.",
+    "subslogan": "Concord offers an elegant and feature-rich experience that sets it apart.",
     "viewGitHubButton": "View on GitHub",
     "getStarted": "Get Started",
     "availableOn": "Available on",
@@ -92,7 +92,7 @@
       "feature4": "Create posts on your profile",
       "feature5": "Create your own community",
       "feature6": "Find new communities",
-      "feature7": "Runs from donations",
+      "feature7": "Voice, screen share and live stage",
       "feature8": "Full source code on GitHub",
       "feature9": "Express yourself with borders"
     }
@@ -113,7 +113,7 @@
       "nsfw": "No NSFW content.",
       "age": "You must be 14 or older."
     },
-    "title": "Welcome to {{appName}}",
+    "title": "Welcome to Concord",
     "email": "Email",
     "username": "Username",
     "password": "Password",
@@ -135,11 +135,11 @@
     "sending": "Sending Email…"
   },
   "welcomePopup": {
-    "subtitle": "Thanks for trying out Nerimity!",
-    "joinServer": "Join the official Nerimity server",
+    "subtitle": "Thanks for trying out Concord!",
+    "joinServer": "Join the official Concord server",
     "editProfile": "Edit my profile",
     "support": "Support me on {{platform}}",
-    "contribute": "Contribute to Nerimity on GitHub"
+    "contribute": "Contribute to Concord on GitHub"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -260,13 +260,13 @@
     "bots": {
       "title": "Explore - Bots",
       "noticeMessage": "A bot can be bumped once every {{hours}} hours. All bumps reset every {{date}}.",
-      "moderationNotice": "Bots are not moderated by Nerimity. Please report bots that are malicious or break the TOS.",
+      "moderationNotice": "Bots are not moderated by Concord. Please report bots that are malicious or break the TOS.",
       "inviteButton": "Invite",
       "serverCount": "In {{count}} servers"
     },
     "themes": {
       "title": "Explore - Themes",
-      "themesHeaderDescription": "Personalise Nerimity with a custom theme.",
+      "themesHeaderDescription": "Personalise Concord with a custom theme.",
       "officialThemes": "Official Themes",
       "communityThemes": "Community Themes",
       "noCommunityThemes": "No community themes found.",
@@ -276,7 +276,7 @@
     "servers": {
       "title": "Explore - Servers",
       "noticeMessage": "A server can be bumped once every {{hours}} hours. All bumps reset every {{date}}.",
-      "moderationNotice": "Servers are not moderated by Nerimity. Please report servers that break the TOS.",
+      "moderationNotice": "Servers are not moderated by Concord. Please report servers that break the TOS.",
       "sortMostBumps": "Most Bumps",
       "sortMostMembers": "Most Members",
       "sortRecentlyAdded": "Recently Added",
@@ -589,7 +589,7 @@
     "language": {
       "reloadNotice": "You must reload the app to fully apply the new language.",
       "reloadButton": "Reload",
-      "searchNotice": "Translations are maintained by the community. Please report any translations that are incorrect or inappropriate to Nerimity.",
+      "searchNotice": "Translations are maintained by the community. Please report any translations that are incorrect or inappropriate to Concord.",
       "contributors": "Contributors"
     },
     "header": {
@@ -630,7 +630,7 @@
       "deleteAccountDescription": "This cannot be undone!",
       "deleteAccountNotice": "You must leave/delete all servers before you can delete your account.",
       "understoodButton": "Understood",
-      "deletionNotice": "We're sad to see you go :( If you didn't like something, please let us know in the official Nerimity server.",
+      "deletionNotice": "We're sad to see you go :( If you didn't like something, please let us know in the official Concord server.",
       "deletedInfo": {
         "title": "What will get deleted",
         "email": "• Email",
@@ -747,7 +747,7 @@
       "stopButton": "Stop",
       "useTurn": "Use Cloudflare TURN Servers",
       "useTurnDescription": "Use TURN servers for better connectivity",
-      "downloadAppNotice": "Download the Nerimity desktop app to use this feature without window tab focus."
+      "downloadAppNotice": "Download the Concord desktop app to use this feature without window tab focus."
     },
     "connections": {
       "thirdParty": {
@@ -760,7 +760,7 @@
         "title": "Using your primary Google account to share or host attachments is not recommended.",
         "message": "Due to the way the Google Drive API handles file metadata, your display name and Google email address are often visible in the background data of any file you share. \n\nUse a throwaway account if you choose to continue using Google Drive."
       },
-      "googleDriveDescription": "Linking your Google account will allow you to upload files in Nerimity. Files will be stored in your Google Drive.",
+      "googleDriveDescription": "Linking your Google account will allow you to upload files in Concord. Files will be stored in your Google Drive.",
       "googleDescription": "Linking your Google account will allow you to login using Google quickly and easily.",
       "linkButton": "Link",
       "unlinkButton": "Unlink"
@@ -802,18 +802,18 @@
       "24HourFormatDescription": "Display time in 24-hour format."
     },
     "window": {
-      "downloadAppNotice": "To modify these settings, you must download the Nerimity desktop app.",
+      "downloadAppNotice": "To modify these settings, you must download the Concord desktop app.",
       "startupOptions": "Startup Options",
-      "openOnStartup": "Open Nerimity on startup",
+      "openOnStartup": "Open Concord on startup",
       "startMinimized": "Start Minimised",
-      "startMinimizedDescription": "Minimise Nerimity to the tray automatically.",
+      "startMinimizedDescription": "Minimise Concord to the tray automatically.",
       "disableHardwareAcceleration": "Disable Hardware Acceleration",
       "disableCustomTitlebar": "Disable Custom Titlebar",
       "reopenAppNotice": "You must reopen the app for the change to take effect."
     },
     "activity": {
       "extension": "Browser Extension",
-      "extensionDescription": "Our RPC extension allows you to share your activity from Spotify and YouTube with users on Nerimity!",
+      "extensionDescription": "Our RPC extension allows you to share your activity from Spotify and YouTube with users on Concord!",
       "visitButton": "Visit {{store}}",
       "activityStatus": "Activity Status",
       "activityStatusDescription": "Share what you're up to with everyone",
@@ -825,7 +825,7 @@
         "emoji": "Emoji"
       },
       "discordActivity": "Discord Activity",
-      "discordActivityDescription": "Share your Discord activity with users on Nerimity",
+      "discordActivityDescription": "Share your Discord activity with users on Concord",
       "idPlaceholder": "Discord User ID",
       "serverModal": {
         "text": "Please join the Discord server to enable Activity Sharing.",
@@ -838,9 +838,9 @@
     },
     "developer": {
       "useLatestUrl": "Use Latest URL",
-      "useLatestUrlDescription": "Load latest.nerimity.com on next app restart. Will relaunch app.",
+      "useLatestUrlDescription": "Load the latest Concord URL on next app restart. Will relaunch app.",
       "useLatestUrlWarning": "It may be unstable or buggy.",
-      "applicationsDescription": "Create Nerimity Bots.",
+      "applicationsDescription": "Create Concord Bots.",
       "apiDocumentation": "API Documentation (incomplete)",
       "addButton": "Add App",
       "name": "Application Name",
@@ -890,7 +890,7 @@
       "noExperiments": "There are currently no experiments available.",
       "reloadRequired": {
         "title": "Reload Required",
-        "body": "Nerimity needs to be restarted for changes to take effect.",
+        "body": "Concord needs to be restarted for changes to take effect.",
         "restartNow": "Restart Now",
         "restartLater": "Restart Later"
       }
@@ -1158,7 +1158,7 @@
         "header": "Sort by",
         "member": "Member",
         "joined": "Joined",
-        "joinedNerimity": "Joined Nerimity"
+        "joinedNerimity": "Joined Concord"
       },
       "order": {
         "header": "Order by",
@@ -1228,10 +1228,10 @@
       "videoModified": "Video was modified.",
       "couldNotGetVideo": "Could not get video.",
       "modifiedOrDeleted": "This video was modified/deleted by the creator in their Google Drive.",
-      "googleDrivePolicy": "Due to new Google Drive policy, you can only play videos from the Nerimity Desktop App."
+      "googleDrivePolicy": "Due to new Google Drive policy, you can only play videos from the Concord Desktop App."
     },
     "audioEmbed": {
-      "googleDrivePolicy": "Due to new Google Drive policy, you can only play audio from the Nerimity Desktop App."
+      "googleDrivePolicy": "Due to new Google Drive policy, you can only play audio from the Concord Desktop App."
     }
   },
   "addFriendModal": {
@@ -1341,15 +1341,15 @@
     },
     "founder": {
       "name": "Founder",
-      "description": "Creator of Nerimity"
+      "description": "Creator of Concord"
     },
     "admin": {
       "name": "Admin",
-      "description": "Admin of Nerimity"
+      "description": "Admin of Concord"
     },
     "mod": {
       "name": "Moderator",
-      "description": "Moderator of Nerimity"
+      "description": "Moderator of Concord"
     },
     "supporter": {
       "name": "Supporter",

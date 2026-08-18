@@ -12,7 +12,7 @@ import { useTransContext } from "@nerimity/solid-i18lite";
 import { emojiUnicodeToShortcode, unicodeToTwemojiUrl } from "@/emoji";
 import { Emoji } from "./markup/Emoji";
 import { JSXElement } from "solid-js";
-import { LogoMono } from "../LogoMono";
+import Icon from "./ui/icon/Icon";
 
 const FooterContainer = styled(FlexRow)`
   gap: 10px;
@@ -49,29 +49,6 @@ const FooterContainer = styled(FlexRow)`
     flex-direction: column-reverse;
   }
 `;
-const SocialIcon = styled("img")`
-  width: 20px;
-  height: 20px;
-  filter: grayscale(100%);
-  opacity: 65%;
-  transition: 0.2s;
-  &:hover {
-    filter: grayscale(15%);
-    opacity: 100%;
-  }
-`;
-const NerimityIcon = styled("svg")`
-  width: 20px;
-  height: 20px;
-  filter: grayscale(100%);
-  opacity: 65%;
-  transition: 0.2s;
-  &:hover {
-    filter: grayscale(15%);
-    opacity: 100%;
-  }
-`;
-
 const socialLinkStyle = css`
   display: flex;
   align-items: center;
@@ -98,85 +75,11 @@ export default function PageFooter() {
         <SocialLinks gap={10} class="social-links">
           <CustomLink
             class={socialLinkStyle}
-            href="https://nerimity.com/i/nerimity"
+            href="https://github.com/Ettym200/concord-front"
             target="_blank"
             rel="noopener noreferrer"
           >
-            <NerimityIcon>
-              <LogoMono />
-            </NerimityIcon>
-          </CustomLink>
-          <CustomLink
-            class={socialLinkStyle}
-            href="https://discord.gg/7PXjkSd"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <SocialIcon src={"/assets/discord.svg"} alt="discord" />
-          </CustomLink>
-          <CustomLink
-            class={socialLinkStyle}
-            href="https://twitter.com/nerimity"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <SocialIcon src={"/assets/twitter.svg"} alt="twitter" />
-          </CustomLink>
-          <CustomLink
-            class={socialLinkStyle}
-            href="https://bsky.app/profile/nerimity.com"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <SocialIcon src={"/assets/bluesky.svg"} alt="bluesky" />
-          </CustomLink>
-          <CustomLink
-            class={socialLinkStyle}
-            href="https://mastodon.social/@nerimity"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <SocialIcon src={"/assets/mastodon.svg"} alt="mastodon" />
-          </CustomLink>
-          <CustomLink
-            class={socialLinkStyle}
-            href="https://www.reddit.com/r/nerimitychat"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <SocialIcon src={"/assets/reddit.svg"} alt="reddit" />
-          </CustomLink>
-          <CustomLink
-            class={socialLinkStyle}
-            href="https://www.threads.com/@nerimity"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <SocialIcon src={"/assets/threads.svg"} alt="threads" />
-          </CustomLink>
-          <CustomLink
-            class={socialLinkStyle}
-            href="https://www.youtube.com/@Nerimity"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <SocialIcon src={"/assets/youtube.svg"} alt="youtube" />
-          </CustomLink>
-          <CustomLink
-            class={socialLinkStyle}
-            href="https://www.producthunt.com/posts/nerimity"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <SocialIcon src={"/assets/producthunt.svg"} alt="product hunt" />
-          </CustomLink>
-          <CustomLink
-            class={socialLinkStyle}
-            href="https://supertigerdev.itch.io/nerimity"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <SocialIcon src={"/assets/itchio.svg"} alt="itchio" />
+            <Icon name="code" size={20} color="rgba(255,255,255,0.65)" />
           </CustomLink>
         </SocialLinks>
       </FlexRow>

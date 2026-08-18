@@ -31,10 +31,21 @@ interface RequestOpts {
 
 const queue = new AsyncFunctionQueue();
 
+function toAbsoluteUrl(rawUrl: string) {
+  if (!rawUrl || !/^https?:\/\//i.test(rawUrl)) {
+    throw {
+      message:
+        "API URL is not configured. Set VITE_SERVER_URL on the front service and restart it.",
+      path: "other"
+    };
+  }
+  return new URL(rawUrl);
+}
+
 export async function request<T>(opts: RequestOpts): Promise<T> {
   return queue.add(async () => {
     const token = getStorageString(StorageKeys.USER_TOKEN, "");
-    const url = new URL(opts.url);
+    const url = toAbsoluteUrl(opts.url);
 
     let params: string[][] | undefined = undefined;
     if (opts.paramsArrayMode === "keys") {
@@ -103,7 +114,7 @@ export function xhrRequest<T>(
 ): Promise<T> {
   return queue.add(async () => {
     const token = getStorageString(StorageKeys.USER_TOKEN, "");
-    const url = new URL(opts.url);
+    const url = toAbsoluteUrl(opts.url);
     url.search = new URLSearchParams(opts.params || {}).toString();
 
     const xhr = new XMLHttpRequest();

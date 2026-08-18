@@ -126,7 +126,7 @@ function Footer() {
 
       <FlexRow gap={4} style={{ "margin-left": "2px", margin: "4px" }}>
         <FooterItem
-          href="https://github.com/Nerimity/Nerimity-Web"
+          href="https://github.com/Ettym200/concord-front"
           external
           icon="code"
           label={t("settings.drawer.source")}

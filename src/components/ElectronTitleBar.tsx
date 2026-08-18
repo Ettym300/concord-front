@@ -8,7 +8,7 @@ export function ElectronTitleBar() {
   return (
     <div class={style.barContainer}>
       <img class={style.nerimityLogo} src="/assets/logo.png" />
-      <span class={style.nerimityTitle}>Nerimity</span>
+      <span class={style.nerimityTitle}>Concord</span>
       <div class={style.windowControlButtonsContainer}>
         <CopyLinkButton />
         <Icon

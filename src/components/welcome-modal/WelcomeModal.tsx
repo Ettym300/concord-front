@@ -20,7 +20,7 @@ export function WelcomeModal(props: { close: () => void }) {
   return (
     <LegacyModal
       ignoreBackgroundClick
-      title={t("registerPage.title", { appName: "Nerimity" })}
+      title={t("registerPage.title", { appName: "Concord" })}
       maxWidth={600}
       actionButtons={ActionButtons}
     >
@@ -29,8 +29,6 @@ export function WelcomeModal(props: { close: () => void }) {
         <EditProfileItem />
         <ServerItem />
         <SourceCodeItem />
-        <SupportKofiItem />
-        <SupportBoostyItem />
       </div>
     </LegacyModal>
   );
@@ -68,44 +66,10 @@ function EditProfileItem() {
   );
 }
 
-function SupportKofiItem() {
-  return (
-    <CustomLink
-      href="https://ko-fi.com/supertiger"
-      target="_blank"
-      style={{ "text-decoration": "none" }}
-    >
-      <div class={styles.itemContainer}>
-        <Icon name="favorite" />
-        <div style={{ flex: 1 }}>
-          {t("welcomePopup.support", { platform: "Ko-Fi" })}
-        </div>
-        <Icon name="open_in_new" />
-      </div>
-    </CustomLink>
-  );
-}
-function SupportBoostyItem() {
-  return (
-    <CustomLink
-      href="https://boosty.to/supertigerdev/donate"
-      target="_blank"
-      style={{ "text-decoration": "none" }}
-    >
-      <div class={styles.itemContainer}>
-        <Icon name="favorite" />
-        <div style={{ flex: 1 }}>
-          {t("welcomePopup.support", { platform: "Boosty" })}
-        </div>
-        <Icon name="open_in_new" />
-      </div>
-    </CustomLink>
-  );
-}
 function SourceCodeItem() {
   return (
     <CustomLink
-      href="https://github.com/Nerimity"
+      href="https://github.com/Ettym200/concord-front"
       target="_blank"
       style={{ "text-decoration": "none" }}
     >

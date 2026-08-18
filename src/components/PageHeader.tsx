@@ -158,7 +158,7 @@ export default function PageHeader(props: { hideAccountInfo?: boolean }) {
     <HeaderContainer class="header-container">
       <A href="/" class={titleContainerStyle}>
         <Logo src={appLogoUrl()} alt="logo" />
-        <Title>Nerimity</Title>
+        <Title>Concord</Title>
       </A>
       {/* Use navigation container here, saves repeating code.. AHEM....*/}
       <NavigationContainer>

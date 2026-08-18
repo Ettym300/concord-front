@@ -1,15 +1,15 @@
 const repos = {
   nerimityWeb: {
-    owner: "Nerimity",
-    repo: "nerimity-web"
+    owner: "Ettym200",
+    repo: "concord-front"
   },
   nerimityDesktop: {
-    owner: "Nerimity",
-    repo: "nerimity-desktop"
+    owner: "Ettym200",
+    repo: "concord-desktop"
   },
   nerimityReactNative: {
-    owner: "Nerimity",
-    repo: "NerimityReactNative"
+    owner: "Ettym200",
+    repo: "concord-mobile"
   }
 };
 

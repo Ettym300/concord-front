@@ -1,7 +1,7 @@
 {
-  "name": "Nerimity",
-  "short_name": "Nerimity",
-  "theme_color": "#77a8f3",
+  "name": "Concord",
+  "short_name": "Concord",
+  "theme_color": "#7aa2ff",
   "description": "A modern and sleek chat app.",
   "id": "/app",
   "start_url": "/app",
