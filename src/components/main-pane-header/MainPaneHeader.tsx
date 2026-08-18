@@ -28,6 +28,7 @@ import RouterEndpoints from "@/common/RouterEndpoints";
 import { CHANNEL_PERMISSIONS, ROLE_PERMISSIONS } from "@/chat-api/Bitwise";
 import { fetchPinnedMessages } from "@/chat-api/services/MessageService";
 import { t } from "@nerimity/i18lite";
+import { VoiceHeader } from "./voice-header/VoiceHeader";
 export default function MainPaneHeader() {
   const {
     servers,
@@ -228,6 +229,7 @@ export default function MainPaneHeader() {
       <Show when={showPinsList()}>
         <PinsListPopup close={() => setShowPinsList(false)} />
       </Show>
+      <VoiceHeader channelId={header.details().channelId} />
     </>
   );
 }

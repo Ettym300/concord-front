@@ -35,8 +35,14 @@ export function VoiceHeader(props: { channelId?: string }) {
 
   const [selectedUserId, setSelectedUserId] = createSignal<null | string>(null);
 
-  const channelVoiceUsers = () =>
-    voiceUsers.getVoiceUsersByChannelId(props.channelId!);
+  const channelId = () =>
+    props.channelId || voiceUsers.currentUser()?.channelId;
+
+  const channelVoiceUsers = () => {
+    const id = channelId();
+    if (!id) return [];
+    return voiceUsers.getVoiceUsersByChannelId(id);
+  };
   const videoStreamingUsers = () =>
     channelVoiceUsers().filter((v) => voiceUsers.videoEnabled(v.userId));
 
@@ -124,7 +130,7 @@ export function VoiceHeader(props: { channelId?: string }) {
               <VoiceParticipants
                 onClick={onTileClick}
                 selectedUserId={selectedUserId()}
-                channelId={props.channelId!}
+                channelId={channelId()!}
               />
             </Show>
             <Show when={isSomeoneVideoStreaming() && viewMode() === "gallery"}>
@@ -173,7 +179,7 @@ export function VoiceHeader(props: { channelId?: string }) {
           </div>
         </Show>
         <VoiceActions
-          channelId={props.channelId!}
+          channelId={channelId()!}
           showViewToggle={!!isSomeoneVideoStreaming()}
         />
       </div>
