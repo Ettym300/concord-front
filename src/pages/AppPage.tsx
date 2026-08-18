@@ -53,6 +53,7 @@ import { lazyLoadEmojis } from "@/emoji";
 import { useReminders } from "@/components/useReminders";
 import { FriendStatus } from "@/chat-api/RawData";
 import { showLiveChat } from "@/components/main-pane-header/voice-header/liveLayout";
+import { updateTitleAlert } from "@/common/BrowserTitle";
 
 const liveTheaterStyles = css`
   &&.liveTheater {
