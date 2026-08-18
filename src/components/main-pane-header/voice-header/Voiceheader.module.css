@@ -335,11 +335,17 @@
   border-radius: 14px;
   background: var(--pane-color);
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+  user-select: none;
 }
 
 .floatingLiveMobile {
   right: 8px;
   bottom: calc(var(--bottom-pane-gap) + 12px);
+}
+
+.floatingLiveGrabbing,
+.floatingLiveGrabbing .floatingLiveBar {
+  cursor: grabbing;
 }
 
 .floatingLiveBar {
@@ -353,12 +359,14 @@
   color: #fff;
   font-size: 12px;
   gap: 8px;
-  cursor: pointer;
+  cursor: grab;
+  touch-action: none;
   text-align: left;
 }
 
 .floatingLiveBar span {
   overflow: hidden;
+  flex: 1;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -383,6 +391,11 @@
   min-height: 180px !important;
 }
 
+.floating.stageView {
+  height: 280px !important;
+  min-height: 240px !important;
+}
+
 .floating .voiceParticipants {
   height: 100%;
 }
@@ -394,4 +407,22 @@
 .floating .videoGrid {
   padding: 6px;
   gap: 6px;
+}
+
+.floating .stageLayout {
+  padding: 4px;
+  gap: 4px;
+}
+
+.floating .filmstrip {
+  height: 64px;
+  padding: 4px 6px 6px;
+}
+
+.floating .filmstripTile {
+  flex: 0 0 96px;
+  width: 96px;
+  height: 48px;
+  min-height: 48px;
+  max-height: 48px;
 }

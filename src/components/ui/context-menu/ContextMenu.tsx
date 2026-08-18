@@ -28,6 +28,7 @@ export interface ContextMenuItem {
   alert?: boolean;
   disabled?: boolean;
   show?: boolean;
+  checked?: boolean;
   prefix?: JSXElement;
   sub?: ContextMenuItem[];
   closeOnClick?: boolean;
@@ -311,6 +312,9 @@ function Item(props: {
           />
         </Show>
         <span class={styles.label}>{props.item.label}</span>
+        <Show when={props.item.checked}>
+          <Icon class={styles.arrow} name="done" size={16} />
+        </Show>
         <Show when={props.item.sub}>
           <Icon class={styles.arrow} name="keyboard_arrow_right" size={16} />
         </Show>

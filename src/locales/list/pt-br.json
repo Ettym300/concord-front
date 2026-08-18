@@ -716,6 +716,13 @@
     "userContextMenu": {
         "viewProfile": "Ver perfil",
         "sendMessage": "Enviar mensagem",
+        "mention": "Mencionar",
+        "startCall": "Iniciar chamada",
+        "muteUser": "Silenciar",
+        "addFriend": "Adicionar amigo",
+        "removeFriend": "Remover amigo",
+        "block": "Bloquear",
+        "unblock": "Desbloquear",
         "editRoles": "Editar cargos",
         "changeNickname": "Alterar apelido",
         "callVolume": "Volume da chamada",

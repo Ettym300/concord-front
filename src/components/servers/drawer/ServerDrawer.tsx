@@ -35,6 +35,8 @@ import InVoiceActions from "@/components/InVoiceActions";
 import { useWindowProperties } from "@/common/useWindowProperties";
 import { useMatch, useParams } from "solid-navigator";
 import ContextMenuServerChannel from "../context-menu/ContextMenuServerChannel";
+import MemberContextMenu from "@/components/member-context-menu/MemberContextMenu";
+import { VoiceUser } from "@/chat-api/store/useVoiceUsers";
 
 const ServerDrawer = () => {
   return (
@@ -447,7 +449,7 @@ const VoiceUserRow = styled("div")`
   overflow: visible;
   border-radius: 4px;
   gap: 8px;
-  cursor: default;
+  cursor: pointer;
   &:hover {
     background-color: rgba(255, 255, 255, 0.06);
   }
@@ -476,6 +478,7 @@ const LiveBadge = styled("span")`
 
 function ChannelItemVoiceUsers(props: { channelId: string }) {
   const { voiceUsers } = useStore();
+  const params = useParams<{ serverId: string }>();
 
   const channelVoiceUsers = () =>
     voiceUsers.getVoiceUsersByChannelId(props.channelId);
@@ -485,25 +488,59 @@ function ChannelItemVoiceUsers(props: { channelId: string }) {
       <ChannelVoiceUsersContainer>
         <For each={channelVoiceUsers()}>
           {(voiceUser) => (
-            <VoiceUserRow>
-              <Avatar
-                user={voiceUser!.user()}
-                size={20}
-                voiceIndicator
-                animate={voiceUser!.voiceActivity}
-              />
-              <VoiceUserName>{voiceUser!.user()?.username}</VoiceUserName>
-              <Show when={voiceUsers.videoEnabled(voiceUser!.userId)}>
-                <LiveBadge>LIVE</LiveBadge>
-              </Show>
-              <Show when={!voiceUsers.micEnabled(voiceUser!.userId)}>
-                <Icon name="mic_off" size={14} color="rgba(255,255,255,0.45)" />
-              </Show>
-            </VoiceUserRow>
+            <ChannelVoiceUserRow
+              voiceUser={voiceUser!}
+              serverId={params.serverId}
+            />
           )}
         </For>
       </ChannelVoiceUsersContainer>
     </Show>
+  );
+}
+
+function ChannelVoiceUserRow(props: {
+  voiceUser: VoiceUser;
+  serverId: string;
+}) {
+  const { voiceUsers } = useStore();
+  const [contextMenu, setContextMenu] = createSignal<{
+    x: number;
+    y: number;
+  } | null>(null);
+
+  return (
+    <>
+      <Show when={contextMenu()}>
+        <MemberContextMenu
+          position={contextMenu()!}
+          serverId={props.serverId}
+          userId={props.voiceUser.userId}
+          onClose={() => setContextMenu(null)}
+        />
+      </Show>
+      <VoiceUserRow
+        onContextMenu={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          setContextMenu({ x: event.clientX, y: event.clientY });
+        }}
+      >
+        <Avatar
+          user={props.voiceUser.user()}
+          size={20}
+          voiceIndicator
+          animate={props.voiceUser.voiceActivity}
+        />
+        <VoiceUserName>{props.voiceUser.user()?.username}</VoiceUserName>
+        <Show when={voiceUsers.videoEnabled(props.voiceUser.userId)}>
+          <LiveBadge>LIVE</LiveBadge>
+        </Show>
+        <Show when={!voiceUsers.micEnabled(props.voiceUser.userId)}>
+          <Icon name="mic_off" size={14} color="rgba(255,255,255,0.45)" />
+        </Show>
+      </VoiceUserRow>
+    </>
   );
 }
 

@@ -7,6 +7,8 @@ import {
   createSignal,
   For,
   on,
+  onCleanup,
+  onMount,
   Show
 } from "solid-js";
 import { ScreenShareModal } from "../ScreenShareModal";
@@ -26,6 +28,12 @@ import { t } from "@nerimity/i18lite";
 const [showParticipants, setShowParticipants] = createSignal(true);
 type VoiceViewMode = "gallery" | "focus";
 const [viewMode, setViewMode] = createSignal<VoiceViewMode>("gallery");
+const [floatingViewMode, setFloatingViewMode] =
+  createSignal<VoiceViewMode>("gallery");
+const [floatPos, setFloatPos] = createSignal<{
+  left: number;
+  top: number;
+} | null>(null);
 
 export function VoiceHeader(props: { channelId?: string; floating?: boolean }) {
   let headerRef: HTMLDivElement | undefined;
@@ -70,7 +78,10 @@ export function VoiceHeader(props: { channelId?: string; floating?: boolean }) {
   const isSomeoneVideoStreaming = () =>
     channelVoiceUsers().find((v) => voiceUsers.videoEnabled(v.userId));
 
-  const displayMode = () => (props.floating ? "gallery" : viewMode());
+  const displayMode = () =>
+    props.floating ? floatingViewMode() : viewMode();
+  const setDisplayMode = (mode: VoiceViewMode) =>
+    props.floating ? setFloatingViewMode(mode) : setViewMode(mode);
 
   const gridColumns = () => {
     const count = channelVoiceUsers().length;
@@ -81,17 +92,13 @@ export function VoiceHeader(props: { channelId?: string; floating?: boolean }) {
   };
 
   const onTileClick = (userId: string) => {
-    if (props.floating) {
+    if (displayMode() === "gallery" && voiceUsers.videoEnabled(userId)) {
       setSelectedUserId(userId);
+      setDisplayMode("focus");
       return;
     }
-    if (viewMode() === "gallery" && voiceUsers.videoEnabled(userId)) {
-      setSelectedUserId(userId);
-      setViewMode("focus");
-      return;
-    }
-    if (viewMode() === "focus" && userId === selectedUserId()) {
-      setViewMode("gallery");
+    if (displayMode() === "focus" && userId === selectedUserId()) {
+      setDisplayMode("gallery");
       return;
     }
     setSelectedUserId(userId);
@@ -192,6 +199,11 @@ function VoiceTile(props: {
   onDblClick?: () => void;
 }) {
   const { voiceUsers, account } = useStore();
+  const params = useParams<{ serverId?: string }>();
+  const [contextPosition, setContextPosition] = createSignal<{
+    x: number;
+    y: number;
+  } | null>(null);
   const stream = () => voiceUsers.videoEnabled(props.voiceUser.userId);
   const isSelf = () => props.voiceUser.userId === account.user()?.id;
   const user = () => props.voiceUser.user();
@@ -200,19 +212,31 @@ function VoiceTile(props: {
   const connected = () => props.voiceUser.connectionStatus === "CONNECTED";
 
   return (
-    <div
-      class={cn(
-        style.voiceTile,
-        conditionalClass(!!stream(), style.hasVideo),
-        conditionalClass(props.selected, style.selected),
-        conditionalClass(talking(), style.talking),
-        conditionalClass(props.large, style.large),
-        conditionalClass(props.filmstrip, style.filmstripTile),
-        !connected() && !isSelf() ? style.disconnected : null
-      )}
-      onClick={props.onClick}
-      onDblClick={props.onDblClick}
-    >
+    <>
+      <MemberContextMenu
+        position={contextPosition()}
+        serverId={params.serverId}
+        userId={props.voiceUser.userId}
+        onClose={() => setContextPosition(null)}
+      />
+      <div
+        class={cn(
+          style.voiceTile,
+          conditionalClass(!!stream(), style.hasVideo),
+          conditionalClass(props.selected, style.selected),
+          conditionalClass(talking(), style.talking),
+          conditionalClass(props.large, style.large),
+          conditionalClass(props.filmstrip, style.filmstripTile),
+          !connected() && !isSelf() ? style.disconnected : null
+        )}
+        onClick={props.onClick}
+        onDblClick={props.onDblClick}
+        onContextMenu={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          setContextPosition({ x: event.clientX, y: event.clientY });
+        }}
+      >
       <Show
         when={stream()}
         fallback={
@@ -243,7 +267,8 @@ function VoiceTile(props: {
           {user()?.username}
         </div>
       </Show>
-    </div>
+      </div>
+    </>
   );
 }
 
@@ -256,30 +281,33 @@ function VideoStream(props: {
   let videoEl: HTMLVideoElement | undefined;
 
   const [muted, setMuted] = createSignal(false);
-  const [playbackReady, setPlaybackReady] = createSignal(false);
+  const [playing, setPlaying] = createSignal(false);
 
-  const shouldMute = () => props.mute || muted() || !playbackReady();
+  const desiredMute = () => props.mute || muted() || !playing();
 
-  const startPlayback = (el: HTMLVideoElement) => {
-    el.muted = true;
+  const tryPlay = () => {
+    const el = videoEl;
+    if (!el) return;
     el.playsInline = true;
+    el.autoplay = true;
+    if (!playing()) el.muted = true;
     void el
       .play()
-      .then(() => setPlaybackReady(true))
-      .catch(() => {
-        const unlock = () => {
-          void el.play().then(() => setPlaybackReady(true));
-          document.removeEventListener("pointerdown", unlock);
-        };
-        document.addEventListener("pointerdown", unlock, { once: true });
-      });
+      .then(() => {
+        setPlaying(true);
+        el.muted = desiredMute();
+      })
+      .catch(() => {});
   };
 
   const attachStream = (el?: HTMLVideoElement) => {
     if (!el) return;
     videoEl = el;
     el.srcObject = props.mediaStream;
-    startPlayback(el);
+    el.addEventListener("loadedmetadata", tryPlay);
+    el.addEventListener("loadeddata", tryPlay);
+    el.addEventListener("canplay", tryPlay);
+    tryPlay();
   };
 
   createEffect(() => {
@@ -287,11 +315,53 @@ function VideoStream(props: {
     const el = videoEl;
     if (!el) return;
     if (el.srcObject !== stream) {
+      setPlaying(false);
       el.srcObject = stream;
-      setPlaybackReady(false);
-      startPlayback(el);
     }
-    el.muted = shouldMute();
+    const onTrackUnmute = () => tryPlay();
+    const tracks = stream.getVideoTracks();
+    tracks.forEach((track) => {
+      track.addEventListener("unmute", onTrackUnmute);
+    });
+    tryPlay();
+    onCleanup(() => {
+      tracks.forEach((track) => {
+        track.removeEventListener("unmute", onTrackUnmute);
+      });
+    });
+  });
+
+  createEffect(() => {
+    const el = videoEl;
+    if (!el || !playing()) return;
+    el.muted = desiredMute();
+  });
+
+  onMount(() => {
+    const unlock = () => tryPlay();
+    document.addEventListener("pointerdown", unlock);
+    document.addEventListener("keydown", unlock);
+
+    const interval = window.setInterval(() => {
+      const el = videoEl;
+      if (!el) return;
+      if (!el.paused && el.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+        setPlaying(true);
+        el.muted = desiredMute();
+        window.clearInterval(interval);
+        return;
+      }
+      tryPlay();
+    }, 200);
+
+    onCleanup(() => {
+      document.removeEventListener("pointerdown", unlock);
+      document.removeEventListener("keydown", unlock);
+      window.clearInterval(interval);
+      videoEl?.removeEventListener("loadedmetadata", tryPlay);
+      videoEl?.removeEventListener("loadeddata", tryPlay);
+      videoEl?.removeEventListener("canplay", tryPlay);
+    });
   });
 
   return (
@@ -305,7 +375,7 @@ function VideoStream(props: {
         ref={attachStream}
         autoplay
         playsinline
-        muted={shouldMute()}
+        muted
       />
       <Show when={props.username}>
         <div class={style.videoName}>{props.username}</div>
@@ -656,6 +726,15 @@ export function FloatingLivePreview() {
   const inboxMatch = useMatch(() => "/app/inbox/:id");
   const serverMatch = useMatch(() => "/app/servers/:serverId/:channelId");
 
+  let liveRef: HTMLDivElement | undefined;
+  let dragging = false;
+  let didDrag = false;
+  let startX = 0;
+  let startY = 0;
+  let origLeft = 0;
+  let origTop = 0;
+  const [grabbing, setGrabbing] = createSignal(false);
+
   const callChannelId = () => voiceUsers.currentUser()?.channelId;
   const viewingChannelId = () =>
     serverMatch()?.params.channelId || inboxMatch()?.params.id;
@@ -682,18 +761,87 @@ export function FloatingLivePreview() {
     navigate(RouterEndpoints.INBOX_MESSAGES(ch.id));
   };
 
+  const clampPos = (left: number, top: number) => {
+    const w = liveRef?.offsetWidth ?? 380;
+    const h = liveRef?.offsetHeight ?? 240;
+    return {
+      left: Math.max(8, Math.min(window.innerWidth - w - 8, left)),
+      top: Math.max(8, Math.min(window.innerHeight - h - 8, top))
+    };
+  };
+
+  const onBarPointerDown = (event: PointerEvent) => {
+    if (event.button !== 0 || !liveRef) return;
+    const rect = liveRef.getBoundingClientRect();
+    dragging = true;
+    didDrag = false;
+    startX = event.clientX;
+    startY = event.clientY;
+    origLeft = rect.left;
+    origTop = rect.top;
+    setGrabbing(true);
+    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+    event.preventDefault();
+  };
+
+  const onBarPointerMove = (event: PointerEvent) => {
+    if (!dragging) return;
+    const dx = event.clientX - startX;
+    const dy = event.clientY - startY;
+    if (!didDrag && dx * dx + dy * dy < 25) return;
+    didDrag = true;
+    setFloatPos(clampPos(origLeft + dx, origTop + dy));
+  };
+
+  const onBarPointerUp = () => {
+    if (!dragging) return;
+    dragging = false;
+    setGrabbing(false);
+    if (!didDrag) goToCall();
+  };
+
+  createEffect(() => {
+    if (!isAwayFromCall()) return;
+    const onResize = () => {
+      const pos = floatPos();
+      if (!pos) return;
+      setFloatPos(clampPos(pos.left, pos.top));
+    };
+    window.addEventListener("resize", onResize);
+    onCleanup(() => window.removeEventListener("resize", onResize));
+  });
+
   return (
     <Show when={isAwayFromCall()}>
       <div
+        ref={liveRef}
         class={cn(
           style.floatingLive,
-          conditionalClass(isMobileWidth(), style.floatingLiveMobile)
+          conditionalClass(isMobileWidth() && !floatPos(), style.floatingLiveMobile),
+          conditionalClass(grabbing(), style.floatingLiveGrabbing)
         )}
+        style={
+          floatPos()
+            ? {
+                left: `${floatPos()!.left}px`,
+                top: `${floatPos()!.top}px`,
+                right: "auto",
+                bottom: "auto"
+              }
+            : undefined
+        }
       >
-        <button type="button" class={style.floatingLiveBar} onClick={goToCall}>
+        <div
+          class={style.floatingLiveBar}
+          onPointerDown={onBarPointerDown}
+          onPointerMove={onBarPointerMove}
+          onPointerUp={onBarPointerUp}
+          onPointerCancel={onBarPointerUp}
+        >
+          <Icon name="drag_indicator" size={16} />
           <Icon name="videocam" size={14} />
           <span>{label()}</span>
-        </button>
+        </div>
         <VoiceHeader channelId={callChannelId()!} floating />
       </div>
     </Show>

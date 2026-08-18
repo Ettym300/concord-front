@@ -966,14 +966,21 @@
     "tripple": "<1>{{username}}</1>, <2>{{username2}}</2> and <3>{{username3}}</3> are typing…",
     "andOthers": "<1>{{count}}</1> users are typing…"
   },
-  "userContextMenu": {
-    "viewProfile": "View Profile",
-    "sendMessage": "Send Message",
-    "editRoles": "Edit Roles",
-    "changeNickname": "Change Nickname",
-    "transferOwnership": "Transfer Ownership",
-    "callVolume": "Call Volume"
-  },
+    "userContextMenu": {
+        "viewProfile": "View Profile",
+        "sendMessage": "Send Message",
+        "mention": "Mention",
+        "startCall": "Start Call",
+        "muteUser": "Mute",
+        "addFriend": "Add Friend",
+        "removeFriend": "Remove Friend",
+        "block": "Block",
+        "unblock": "Unblock",
+        "editRoles": "Edit Roles",
+        "changeNickname": "Change Nickname",
+        "transferOwnership": "Transfer Ownership",
+        "callVolume": "Call Volume"
+    },
   "emojiModal": {
     "title": "Emoji",
     "defaultEmoji": "Default Emoji",

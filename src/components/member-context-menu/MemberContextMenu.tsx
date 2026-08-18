@@ -24,7 +24,7 @@ import {
 import { ServerMember } from "@/chat-api/store/useServerMembers";
 import Button from "@/components/ui/Button";
 import { ROLE_PERMISSIONS } from "@/chat-api/Bitwise";
-import { RawUser } from "@/chat-api/RawData";
+import { FriendStatus, RawUser } from "@/chat-api/RawData";
 import { useNavigate } from "solid-navigator";
 import RouterEndpoints from "@/common/RouterEndpoints";
 import { FlexRow } from "../ui/Flexbox";
@@ -44,6 +44,8 @@ import {
   cachedVolumes,
   setCachedVolumes
 } from "@/chat-api/store/useVoiceUsers";
+import { addFriend } from "@/chat-api/services/FriendService";
+import { blockUser, unblockUser } from "@/chat-api/services/UserService";
 
 import {
   SteppedSlider,
@@ -57,7 +59,17 @@ type Props = Omit<ContextMenuProps, "items"> & {
 };
 
 export default function MemberContextMenu(props: Props) {
-  const { serverMembers, servers, account, users } = useStore();
+  const {
+    serverMembers,
+    servers,
+    account,
+    users,
+    friends,
+    header,
+    channels,
+    channelProperties,
+    voiceUsers
+  } = useStore();
   const { createPortal } = useCustomPortal();
 
   const navigate = useNavigate();
@@ -247,40 +259,134 @@ export default function MemberContextMenu(props: Props) {
     ));
   };
 
+  const isSelf = () => props.userId === account.user()?.id;
+  const targetUser = () => props.user || users.get(props.userId);
+  const friend = () => friends.get(props.userId);
+  const isFriend = () => friend()?.status === FriendStatus.FRIENDS;
+  const isBlocked = () => friends.hasBeenBlockedByMe(props.userId);
+  const mentionChannelId = () => header.details().channelId;
+
+  const voiceUser = () =>
+    voiceUsers.getVoiceUser(
+      voiceUsers.currentUser()?.channelId!,
+      props.userId
+    );
+  const inSameCall = () => !!voiceUser()?.audio && !isSelf();
+  const isLocallyMuted = () => (cachedVolumes[props.userId] ?? 1) === 0;
+
+  const onMentionClick = () => {
+    const channelId = mentionChannelId();
+    if (!channelId) return;
+    const current = channelProperties.get(channelId)?.content || "";
+    const mention = `[@:${props.userId}]`;
+    const next = current.trim() ? `${current.trimEnd()} ${mention} ` : `${mention} `;
+    channelProperties.updateContent(channelId, next);
+  };
+
+  const onCallClick = async () => {
+    await users.openDM(props.userId);
+    const dmChannelId = users.get(props.userId)?.inboxChannelId;
+    if (!dmChannelId) return;
+    channels.get(dmChannelId)?.joinCall();
+  };
+
+  const onToggleLocalMute = () => {
+    const next = isLocallyMuted() ? 1 : 0;
+    setCachedVolumes(props.userId, next);
+    const audio = voiceUser()?.audio;
+    if (audio) audio.volume = next;
+  };
+
+  const onAddFriendClick = () => {
+    const user = targetUser();
+    if (!user) return;
+    addFriend({ username: user.username, tag: user.tag }).catch((err) => {
+      toast(err.message);
+    });
+  };
+
+  const menuItems = () => [
+    {
+      label: t("userContextMenu.viewProfile"),
+      icon: "person",
+      onClick: () => navigate(RouterEndpoints.PROFILE(props.userId))
+    },
+    {
+      label: t("userContextMenu.mention"),
+      icon: "alternate_email",
+      show: !!mentionChannelId(),
+      onClick: onMentionClick
+    },
+    {
+      label: t("userContextMenu.sendMessage"),
+      icon: "comment",
+      show: !isSelf(),
+      onClick: () => users.openDM(props.userId)
+    },
+    {
+      label: t("userContextMenu.startCall"),
+      icon: "call",
+      show: !isSelf(),
+      onClick: onCallClick
+    },
+    { separator: true, show: inSameCall() },
+    {
+      label: t("userContextMenu.muteUser"),
+      icon: isLocallyMuted() ? "volume_off" : "volume_up",
+      show: inSameCall(),
+      checked: isLocallyMuted(),
+      onClick: onToggleLocalMute
+    },
+    { separator: true, show: !isSelf() },
+    {
+      label: t("userContextMenu.addFriend"),
+      icon: "person_add",
+      show: !isSelf() && !isFriend() && !isBlocked(),
+      onClick: onAddFriendClick
+    },
+    {
+      label: t("userContextMenu.removeFriend"),
+      icon: "person_remove",
+      show: !isSelf() && isFriend(),
+      onClick: () => friend()?.remove()
+    },
+    {
+      label: t("userContextMenu.unblock"),
+      icon: "check_circle",
+      show: !isSelf() && isBlocked(),
+      onClick: () => unblockUser(props.userId)
+    },
+    {
+      label: t("userContextMenu.block"),
+      icon: "block",
+      alert: true,
+      show: !isSelf() && !isBlocked(),
+      onClick: () => blockUser(props.userId)
+    },
+    ...adminItems(),
+    { separator: true },
+    ...(account.hasModeratorPerm(true)
+      ? [
+          {
+            label: "Moderation Pane",
+            onClick: () => navigate("/app/moderation/users/" + props.userId),
+            icon: "security"
+          }
+        ]
+      : []),
+    {
+      icon: "content_copy",
+      label: t("general.copyID"),
+      onClick: () => copyToClipboard(props.userId)
+    }
+  ];
+
   return (
     <>
       <ContextMenu
         header={<Header userId={props.userId} />}
         {...props}
-        items={[
-          {
-            label: t("userContextMenu.viewProfile"),
-            icon: "person",
-            onClick: () => navigate(RouterEndpoints.PROFILE(props.userId))
-          },
-          {
-            label: t("userContextMenu.sendMessage"),
-            icon: "comment",
-            onClick: () => users.openDM(props.userId)
-          },
-          ...adminItems(),
-          { separator: true },
-          ...(account.hasModeratorPerm(true)
-            ? [
-                {
-                  label: "Moderation Pane",
-                  onClick: () =>
-                    navigate("/app/moderation/users/" + props.userId),
-                  icon: "security"
-                }
-              ]
-            : []),
-          {
-            icon: "content_copy",
-            label: t("general.copyID"),
-            onClick: () => copyToClipboard(props.userId)
-          }
-        ]}
+        items={menuItems()}
       />
     </>
   );
