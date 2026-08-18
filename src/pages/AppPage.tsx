@@ -26,7 +26,8 @@ import {
   useSearchParams,
   Outlet,
   useNavigate,
-  useLocation
+  useLocation,
+  useParams
 } from "solid-navigator";
 import { css, styled } from "solid-styled-components";
 import { useCustomPortal } from "@/components/ui/custom-portal/CustomPortal";
@@ -59,39 +60,37 @@ import { updateTitleAlert } from "@/common/BrowserTitle";
 const liveTheaterStyles = css`
   &&.liveTheater {
     overflow: hidden !important;
-    display: grid !important;
-    grid-template-rows: auto minmax(0, 1fr);
+    display: flex !important;
+    flex-direction: column !important;
     flex: 1 1 0 !important;
     flex-shrink: 1 !important;
     width: 100%;
-    height: 100%;
-    min-height: 0;
+    min-height: 0 !important;
   }
   &&.liveTheater :global(.live-stage-row) {
-    display: grid;
+    display: flex;
     overflow: hidden;
-    grid-template-columns: minmax(0, 1fr) auto;
-    min-height: 0;
-    height: 100%;
+    flex: 1 1 0;
+    min-height: 50vh;
   }
   &&.liveTheater :global(.voice-stage) {
     position: relative !important;
     top: auto !important;
     overflow: hidden !important;
-    flex: none;
-    width: 100%;
+    flex: 1 1 0 !important;
+    width: auto;
     min-width: 0;
-    height: 100% !important;
-    min-height: 0 !important;
+    height: auto !important;
+    min-height: 50vh !important;
     max-height: none !important;
     resize: none;
   }
   &&.liveTheater :global(.messagePane) {
     display: none;
+    flex: 0 0 360px;
     width: 360px;
     min-width: 280px;
     min-height: 0;
-    height: 100%;
     overflow: hidden;
     border-left: 1px solid rgba(255, 255, 255, 0.06);
   }
@@ -357,6 +356,7 @@ function MainPane() {
   const windowProperties = useWindowProperties();
   const { hasRightDrawer, hasLeftDrawer } = useDrawer();
   const { header, voiceUsers } = useStore();
+  const params = useParams<{ channelId?: string }>();
   const [outerPaneElement, setOuterPaneElement] = createSignal<
     HTMLDivElement | undefined
   >(undefined);
@@ -375,9 +375,12 @@ function MainPane() {
     windowProperties.setPaneWidth(width());
   });
 
+  const paneChannelId = () =>
+    header.details().channelId || params.channelId;
+
   const isLiveTheater = () => {
     if (windowProperties.isMobileWidth()) return false;
-    const channelId = header.details().channelId;
+    const channelId = paneChannelId();
     if (!channelId) return false;
     return voiceUsers
       .getVoiceUsersByChannelId(channelId)
@@ -411,7 +414,7 @@ function MainPane() {
               isLiveTheater() ? undefined : { display: "contents" }
             }
           >
-            <VoiceHeader channelId={header.details().channelId} />
+            <VoiceHeader channelId={paneChannelId()} />
             <Outlet name="mainPane" />
           </div>
           <Show when={!windowProperties.isMobileAgent() && !isLiveTheater()}>
