@@ -9,17 +9,21 @@ import { CustomLink } from "./ui/CustomLink";
 import { timeSinceDigital } from "@/common/date";
 import Button from "./ui/Button";
 import { Trans } from "@nerimity/solid-i18lite";
+import { useCustomPortal } from "./ui/custom-portal/CustomPortal";
+import { ScreenShareModal } from "./main-pane-header/ScreenShareModal";
+import { VoiceAudioSettingsModal } from "./settings/VoiceAudioSettingsModal";
+import { t } from "@nerimity/i18lite";
 
 const InVoiceActionsContainer = styled(FlexColumn)`
-  background-color: rgb(15, 15, 15);
-  margin: 3px;
-  margin-bottom: 0;
-  border-radius: 6px;
+  background-color: #232428;
+  margin: 8px;
+  margin-bottom: 8px;
+  border-top: 1px solid #23a559;
+  border-radius: 8px;
   flex-shrink: 0;
-  padding-top: 6px;
-
+  padding-top: 8px;
   position: sticky;
-  bottom: 5px;
+  bottom: 4px;
   z-index: 11111111;
 `;
 const DetailsContainer = styled(FlexColumn)`
@@ -88,12 +92,47 @@ const ActionButtonsContainer = styled(FlexRow)`
 `;
 
 function ActionButtons(props: { channelId: string }) {
-  const { channels } = useStore();
+  const { channels, voiceUsers } = useStore();
+  const { createPortal } = useCustomPortal();
   const channel = () => channels.get(props.channelId);
+  const currentVoiceUser = () => voiceUsers.currentUser();
+
+  const onScreenShareClick = () => {
+    createPortal((close) => <ScreenShareModal close={close} />);
+  };
+
+  const onAudioSettingsClick = () => {
+    createPortal((close) => <VoiceAudioSettingsModal close={close} />);
+  };
+
   return (
     <ActionButtonsContainer>
+      <Show when={!currentVoiceUser()?.videoStream}>
+        <Button
+          margin={0}
+          iconName="monitor"
+          iconSize={16}
+          onClick={onScreenShareClick}
+        />
+      </Show>
+      <Show when={currentVoiceUser()?.videoStream}>
+        <Button
+          margin={0}
+          iconName="desktop_access_disabled"
+          iconSize={16}
+          color="var(--alert-color)"
+          onClick={() => voiceUsers.setVideoStream(null)}
+        />
+      </Show>
       <VoiceDeafenButton channelId={props.channelId} />
       <VoiceMicButton channelId={props.channelId} />
+      <Button
+        margin={0}
+        iconName="settings_voice"
+        iconSize={16}
+        hoverText={t("inVoiceActions.audioSettings")}
+        onClick={onAudioSettingsClick}
+      />
       <Button
         margin={0}
         iconName="call_end"

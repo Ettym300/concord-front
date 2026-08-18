@@ -20,18 +20,17 @@
   width: 100%;
   height: var(--header-height);
   box-sizing: border-box;
-
-  padding: 6px;
-
-  margin-bottom: 3px;
-  border-bottom: solid 1px rgba(255, 255, 255, 0.1);
-  background-color: var(--header-background-color);
+  padding: 8px 12px;
+  margin-bottom: 0;
+  border-bottom: solid 1px rgba(0, 0, 0, 0.3);
+  background-color: var(--side-pane-color);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
   user-select: none;
   transition: 0.2s;
-  backdrop-filter: blur(34px);
 }
 
 .text {
-  margin-left: 10px;
+  margin-left: 4px;
   font-size: 16px;
+  font-weight: 600;
 }

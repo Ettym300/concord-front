@@ -199,14 +199,14 @@
   position: relative;
   display: flex;
   align-items: center;
-  padding: 5px;
+  padding: 6px 8px;
   padding-left: 8px;
-  border-radius: 8px;
+  border-radius: 4px;
   cursor: pointer;
   user-select: none;
-  transition: 0.2s;
+  transition: 0.15s;
   &:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: var(--drawer-item-hover-background-color);
   }
   a {
     pointer-events: none;

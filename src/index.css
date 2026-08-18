@@ -6,8 +6,8 @@ body {
   margin: 0;
   color: var(--text-color);
   background: var(--background-color);
-  font-family: "Inter", sans-serif;
-  font-weight: 300;
+  font-family: "Inter", "gg sans", "Noto Sans", sans-serif;
+  font-weight: 400;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overscroll-behavior-y: contain;
@@ -16,7 +16,7 @@ body {
 }
 
 :root {
-  --header-height: 50px;
+  --header-height: 48px;
   --bottom-pane-gap: 70px;
 }
 

@@ -136,7 +136,12 @@ export default function Avatar(props: Props) {
   return (
     <div
       style={{ width: props.size + "px", height: props.size + "px" }}
-      class={classNames(style.avatarContainer, "avatar-container", props.class)}
+      class={classNames(
+        style.avatarContainer,
+        "avatar-container",
+        props.voiceIndicator && props.animate && style.talking,
+        props.class
+      )}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >

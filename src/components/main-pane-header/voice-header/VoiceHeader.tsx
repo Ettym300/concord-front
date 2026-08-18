@@ -4,7 +4,6 @@ import { cn, conditionalClass } from "@/common/classNames";
 import Button from "@/components/ui/Button";
 import {
   createEffect,
-  createMemo,
   createSignal,
   For,
   on,
@@ -12,6 +11,7 @@ import {
 } from "solid-js";
 import { ScreenShareModal } from "../ScreenShareModal";
 import { WebcamModal } from "../WebcamModal";
+import { VoiceAudioSettingsModal } from "@/components/settings/VoiceAudioSettingsModal";
 import { useCustomPortal } from "@/components/ui/custom-portal/CustomPortal";
 import { useWindowProperties } from "@/common/useWindowProperties";
 import Icon from "@/components/ui/icon/Icon";
@@ -24,6 +24,8 @@ import { VoiceUser } from "@/chat-api/store/useVoiceUsers";
 import { t } from "@nerimity/i18lite";
 
 const [showParticipants, setShowParticipants] = createSignal(true);
+type VoiceViewMode = "gallery" | "focus";
+const [viewMode, setViewMode] = createSignal<VoiceViewMode>("focus");
 
 export function VoiceHeader(props: { channelId?: string }) {
   let headerRef: HTMLDivElement | undefined;
@@ -33,7 +35,7 @@ export function VoiceHeader(props: { channelId?: string }) {
       headerRef.style.minHeight = "";
     }
   });
-  const { voiceUsers, account } = useStore();
+  const { voiceUsers } = useStore();
 
   const [selectedUserId, setSelectedUserId] = createSignal<null | string>(null);
 
@@ -44,20 +46,44 @@ export function VoiceHeader(props: { channelId?: string }) {
 
   createEffect(
     on(videoStreamingUsers, (now, prev) => {
-      if (!now?.length) setSelectedUserId(null);
+      if (!now?.length && !channelVoiceUsers().length) setSelectedUserId(null);
       if (!prev?.length && now.length) {
         setSelectedUserId(now[0]!.userId);
+      }
+      if (
+        selectedUserId() &&
+        channelVoiceUsers().every((user) => user.userId !== selectedUserId())
+      ) {
+        setSelectedUserId(now[0]?.userId ?? channelVoiceUsers()[0]?.userId ?? null);
       }
     })
   );
 
   const selectedVoiceUser = () => {
-    if (!selectedUserId()) return null;
-    return videoStreamingUsers().find((v) => v.userId === selectedUserId());
+    if (!selectedUserId()) return channelVoiceUsers()[0];
+    return (
+      channelVoiceUsers().find((v) => v.userId === selectedUserId()) ||
+      channelVoiceUsers()[0]
+    );
   };
 
   const isSomeoneVideoStreaming = () =>
     channelVoiceUsers().find((v) => voiceUsers.videoEnabled(v.userId));
+
+  const gridColumns = () => {
+    const count = channelVoiceUsers().length;
+    if (count <= 1) return 1;
+    if (count <= 4) return 2;
+    if (count <= 9) return 3;
+    return 4;
+  };
+
+  const onTileClick = (userId: string) => {
+    setSelectedUserId(userId);
+    if (viewMode() === "gallery" && voiceUsers.videoEnabled(userId)) {
+      setViewMode("focus");
+    }
+  };
 
   return (
     <Show when={channelVoiceUsers().length}>
@@ -66,48 +92,190 @@ export function VoiceHeader(props: { channelId?: string }) {
         class={cn(
           style.headerVoiceParticipants,
           conditionalClass(isSomeoneVideoStreaming(), style.videoStream),
+          conditionalClass(
+            isSomeoneVideoStreaming() && viewMode() === "gallery",
+            style.galleryView
+          ),
+          conditionalClass(
+            isSomeoneVideoStreaming() && viewMode() === "focus",
+            style.stageView
+          ),
           conditionalClass(!showParticipants(), style.miniView)
         )}
       >
         <Show when={showParticipants()}>
           <div class={style.top}>
-            <VoiceParticipants
-              onClick={setSelectedUserId}
-              selectedUserId={selectedUserId()}
-              channelId={props.channelId!}
-              size={isSomeoneVideoStreaming() ? "small" : undefined}
-            />
-            <Show when={isSomeoneVideoStreaming()}>
-              <VideoStream
-                mediaStream={
-                  voiceUsers.videoEnabled(selectedVoiceUser()?.userId!)!
-                }
-                mute={selectedVoiceUser()?.userId === account.user()?.id}
+            <Show when={!isSomeoneVideoStreaming()}>
+              <VoiceParticipants
+                onClick={onTileClick}
+                selectedUserId={selectedUserId()}
+                channelId={props.channelId!}
               />
+            </Show>
+            <Show when={isSomeoneVideoStreaming() && viewMode() === "gallery"}>
+              <div
+                class={style.videoGrid}
+                style={{
+                  "grid-template-columns": `repeat(${gridColumns()}, minmax(0, 1fr))`
+                }}
+              >
+                <For each={channelVoiceUsers()}>
+                  {(voiceUser) => (
+                    <VoiceTile
+                      voiceUser={voiceUser!}
+                      selected={voiceUser.userId === selectedUserId()}
+                      onClick={() => onTileClick(voiceUser.userId)}
+                    />
+                  )}
+                </For>
+              </div>
+            </Show>
+            <Show when={isSomeoneVideoStreaming() && viewMode() === "focus"}>
+              <div class={style.stageLayout}>
+                <Show when={selectedVoiceUser()}>
+                  <div class={style.stageMain}>
+                    <VoiceTile
+                      voiceUser={selectedVoiceUser()!}
+                      selected
+                      large
+                    />
+                  </div>
+                </Show>
+                <div class={style.filmstrip}>
+                  <For each={channelVoiceUsers()}>
+                    {(voiceUser) => (
+                      <VoiceTile
+                        voiceUser={voiceUser!}
+                        selected={voiceUser.userId === selectedUserId()}
+                        filmstrip
+                        onClick={() => onTileClick(voiceUser.userId)}
+                      />
+                    )}
+                  </For>
+                </div>
+              </div>
             </Show>
           </div>
         </Show>
-        <VoiceActions channelId={props.channelId!} />
+        <VoiceActions
+          channelId={props.channelId!}
+          showViewToggle={!!isSomeoneVideoStreaming()}
+        />
       </div>
     </Show>
   );
 }
 
-function VideoStream(props: { mediaStream: MediaStream; mute?: boolean }) {
+function VoiceTile(props: {
+  voiceUser: VoiceUser;
+  selected?: boolean;
+  large?: boolean;
+  filmstrip?: boolean;
+  onClick?: () => void;
+  onDblClick?: () => void;
+}) {
+  const { voiceUsers, account } = useStore();
+  const stream = () => voiceUsers.videoEnabled(props.voiceUser.userId);
+  const isSelf = () => props.voiceUser.userId === account.user()?.id;
+  const user = () => props.voiceUser.user();
+  const talking = () => props.voiceUser.voiceActivity;
+  const isMuted = () => !voiceUsers.micEnabled(props.voiceUser.userId);
+  const connected = () => props.voiceUser.connectionStatus === "CONNECTED";
+
+  return (
+    <div
+      class={cn(
+        style.voiceTile,
+        conditionalClass(!!stream(), style.hasVideo),
+        conditionalClass(props.selected, style.selected),
+        conditionalClass(talking(), style.talking),
+        conditionalClass(props.large, style.large),
+        conditionalClass(props.filmstrip, style.filmstripTile),
+        !connected() && !isSelf() ? style.disconnected : null
+      )}
+      onClick={props.onClick}
+      onDblClick={props.onDblClick}
+    >
+      <Show
+        when={stream()}
+        fallback={
+          <div class={style.tileAvatar}>
+            <Show when={user()}>
+              <Avatar
+                user={user()!}
+                size={props.filmstrip ? 40 : props.large ? 96 : 72}
+                voiceIndicator
+                animate={talking()}
+              />
+            </Show>
+          </div>
+        }
+      >
+        <VideoStream
+          mediaStream={stream()!}
+          mute={isSelf()}
+          username={user()?.username}
+          compact
+        />
+      </Show>
+      <Show when={!stream()}>
+        <div class={style.tileName}>
+          <Show when={isMuted()}>
+            <Icon name="mic_off" size={14} color="white" />
+          </Show>
+          {user()?.username}
+        </div>
+      </Show>
+    </div>
+  );
+}
+
+function VideoStream(props: {
+  mediaStream: MediaStream;
+  mute?: boolean;
+  username?: string;
+  compact?: boolean;
+}) {
   let videoEl: HTMLVideoElement | undefined;
 
   const [muted, setMuted] = createSignal(false);
 
-  const mediaStream = createMemo(() => props.mediaStream);
+  const attachStream = (el?: HTMLVideoElement) => {
+    if (!el) return;
+    videoEl = el;
+    el.srcObject = props.mediaStream;
+    el.muted = props.mute || muted();
+    el.playsInline = true;
+    void el.play().catch(() => {});
+  };
 
   createEffect(() => {
-    if (!videoEl) return;
-    videoEl.srcObject = mediaStream();
+    const stream = props.mediaStream;
+    const el = videoEl;
+    if (!el) return;
+    if (el.srcObject !== stream) {
+      el.srcObject = stream;
+    }
+    el.muted = props.mute || muted();
+    void el.play().catch(() => {});
   });
 
   return (
-    <div class={style.videoContainer}>
-      <video ref={videoEl} autoplay muted={props.mute || muted()} />
+    <div
+      class={cn(
+        style.videoContainer,
+        conditionalClass(props.compact, style.compact)
+      )}
+    >
+      <video
+        ref={attachStream}
+        autoplay
+        playsinline
+        muted={props.mute || muted()}
+      />
+      <Show when={props.username}>
+        <div class={style.videoName}>{props.username}</div>
+      </Show>
       <div class={style.videoOverlay}>
         <Show when={!props.mute}>
           <div class={style.volumeSlider}>
@@ -117,7 +285,10 @@ function VideoStream(props: { mediaStream: MediaStream; mute?: boolean }) {
               padding={6}
               color={muted() ? "var(--alert-color)" : "var(--primary-color)"}
               margin={0}
-              onClick={() => setMuted(!muted())}
+              onClick={(event) => {
+                event.stopPropagation();
+                setMuted(!muted());
+              }}
             />
             <input
               type="range"
@@ -125,6 +296,7 @@ function VideoStream(props: { mediaStream: MediaStream; mute?: boolean }) {
               value={muted() ? 0 : videoEl!.volume}
               max={1}
               step={0.01}
+              onClick={(event) => event.stopPropagation()}
               onInput={(e) => {
                 videoEl!.volume = parseFloat(e.target.value);
                 setMuted(false);
@@ -138,7 +310,10 @@ function VideoStream(props: { mediaStream: MediaStream; mute?: boolean }) {
           title={t("mainPaneHeader.voice.fullscreen")}
           padding={6}
           margin={0}
-          onClick={() => videoEl?.requestFullscreen({ navigationUI: "hide" })}
+          onClick={(event) => {
+            event.stopPropagation();
+            videoEl?.requestFullscreen({ navigationUI: "hide" });
+          }}
         />
       </div>
     </div>
@@ -283,7 +458,10 @@ function VoiceParticipantItem(props: {
   );
 }
 
-function VoiceActions(props: { channelId: string }) {
+function VoiceActions(props: {
+  channelId: string;
+  showViewToggle?: boolean;
+}) {
   const { voiceUsers, channels } = useStore();
   const { createPortal } = useCustomPortal();
   const { isMobileAgent } = useWindowProperties();
@@ -311,6 +489,10 @@ function VoiceActions(props: { channelId: string }) {
     return createPortal((close) => <WebcamModal close={close} />);
   };
 
+  const onAudioSettingsClick = () => {
+    createPortal((close) => <VoiceAudioSettingsModal close={close} />);
+  };
+
   const onStopScreenShareClick = () => {
     voiceUsers.setVideoStream(null);
   };
@@ -329,6 +511,16 @@ function VoiceActions(props: { channelId: string }) {
           iconName="keyboard_arrow_down"
           color="rgba(255,255,255,0.6)"
           onClick={() => setShowParticipants(true)}
+        />
+      </Show>
+      <Show when={props.showViewToggle && showParticipants()}>
+        <Button
+          iconName={viewMode() === "gallery" ? "crop_free" : "grid_view"}
+          color="rgba(255,255,255,0.6)"
+          title={viewMode() === "gallery" ? "Focus" : "Gallery"}
+          onClick={() =>
+            setViewMode(viewMode() === "gallery" ? "focus" : "gallery")
+          }
         />
       </Show>
       <Show when={!isInCall()}>
@@ -355,6 +547,12 @@ function VoiceActions(props: { channelId: string }) {
         </Show>
         <VoiceDeafenActions />
         <VoiceMicActions />
+        <Button
+          iconName="settings_voice"
+          color="rgba(255,255,255,0.6)"
+          hoverText={t("mainPaneHeader.voice.audioSettings")}
+          onClick={onAudioSettingsClick}
+        />
         <Button
           iconName="call_end"
           color="var(--alert-color)"

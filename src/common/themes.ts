@@ -22,19 +22,19 @@ const ThemeTokensBase = [
   {
     key: "background-color",
     category: ThemeCategory.Surface,
-    value: "#000000",
+    value: "#1e1f22",
     allowGradient: true
   },
   {
     key: "pane-color",
     category: ThemeCategory.Surface,
-    value: "#000000",
+    value: "#313338",
     allowGradient: true
   },
   {
     key: "side-pane-color",
     category: ThemeCategory.Surface,
-    value: "#0f0f0f",
+    value: "#2b2d31",
     allowGradient: true
   },
 
@@ -42,115 +42,115 @@ const ThemeTokensBase = [
   {
     key: "header-background-color",
     category: ThemeCategory.Overlays,
-    value: "#111111cc"
+    value: "#313338"
   },
   {
     key: "header-background-color-blur-disabled",
     category: ThemeCategory.Overlays,
-    value: "#000000"
+    value: "#313338"
   },
   {
     key: "tooltip-background-color",
     category: ThemeCategory.Overlays,
-    value: "#0a0a0a"
+    value: "#111214"
   },
 
   // Input
   {
     key: "chat-input-background-color",
     category: ThemeCategory.Input,
-    value: "rgba(0, 0, 0, 0.86)"
+    value: "#383a40"
   },
   {
     key: "chat-input-background-color-blur-disabled",
     category: ThemeCategory.Input,
-    value: "black"
+    value: "#383a40"
   },
 
   // Markup bar
   {
     key: "chat-markup-bar-background-color",
     category: ThemeCategory.MarkupBar,
-    value: "rgba(0, 0, 0, 0.86)"
+    value: "#2b2d31"
   },
   {
     key: "chat-markup-bar-background-color-blur-disabled",
     category: ThemeCategory.MarkupBar,
-    value: "black"
+    value: "#2b2d31"
   },
 
   // Message
   {
     key: "message-hover-background-color",
     category: ThemeCategory.Message,
-    value: "rgba(255, 255, 255, 0.1)"
+    value: "rgba(2, 2, 2, 0.12)"
   },
   {
     key: "message-floating-options-background-color",
     category: ThemeCategory.Message,
-    value: "rgba(15, 15, 15, 1)"
+    value: "#111214"
   },
 
   // Accent (Primary)
-  { key: "primary-color", category: ThemeCategory.Accent, value: "#4c93ff" },
+  { key: "primary-color", category: ThemeCategory.Accent, value: "#5865f2" },
   {
     key: "primary-color-dark",
     category: ThemeCategory.Accent,
-    value: "#2d3746"
+    value: "#3c45a5"
   },
 
   // Alert
-  { key: "alert-color", category: ThemeCategory.Alert, value: "#eb6e6e" },
-  { key: "alert-color-dark", category: ThemeCategory.Alert, value: "#3e2626" },
+  { key: "alert-color", category: ThemeCategory.Alert, value: "#ed4245" },
+  { key: "alert-color-dark", category: ThemeCategory.Alert, value: "#4a1c1d" },
 
   // Warn
-  { key: "warn-color", category: ThemeCategory.Warn, value: "#ff8f2c" },
-  { key: "warn-color-dark", category: ThemeCategory.Warn, value: "#3a3229" },
+  { key: "warn-color", category: ThemeCategory.Warn, value: "#f0b232" },
+  { key: "warn-color-dark", category: ThemeCategory.Warn, value: "#3d3218" },
 
   // Success
-  { key: "success-color", category: ThemeCategory.Success, value: "#78e380" },
+  { key: "success-color", category: ThemeCategory.Success, value: "#23a559" },
   {
     key: "success-color-dark",
     category: ThemeCategory.Success,
-    value: "#1c221d"
+    value: "#1a3d28"
   },
 
   // Status
-  { key: "status-offline", category: ThemeCategory.Status, value: "#adadad" },
-  { key: "status-online", category: ThemeCategory.Status, value: "#78e380" },
+  { key: "status-offline", category: ThemeCategory.Status, value: "#80848e" },
+  { key: "status-online", category: ThemeCategory.Status, value: "#23a559" },
   {
     key: "status-looking-to-play",
     category: ThemeCategory.Status,
-    value: "#78a5e3"
+    value: "#3ba55c"
   },
   {
     key: "status-away-from-keyboard",
     category: ThemeCategory.Status,
-    value: "#e3a878"
+    value: "#f0b232"
   },
   {
     key: "status-do-not-disturb",
     category: ThemeCategory.Status,
-    value: "#e37878"
+    value: "#f23f43"
   },
 
   // Text
-  { key: "text-color", category: ThemeCategory.Text, value: "white" },
+  { key: "text-color", category: ThemeCategory.Text, value: "#f2f3f5" },
   {
     key: "content-color",
     category: ThemeCategory.Text,
-    value: "rgba(255, 255, 255, 0.8)"
+    value: "#dbdee1"
   },
-  { key: "side-pane-text-color", category: ThemeCategory.Text, value: "white" },
+  { key: "side-pane-text-color", category: ThemeCategory.Text, value: "#f2f3f5" },
   {
     key: "typing-indicator-color",
     category: ThemeCategory.Text,
-    value: "white"
+    value: "#f2f3f5"
   },
   {
     key: "typing-indicator-secondary-color",
     category: ThemeCategory.Text,
-    value: "rgba(255, 255, 255, 0.7)"
+    value: "#b5bac1"
   },
 
   // Markup
@@ -189,12 +189,12 @@ const ThemeTokensBase = [
   {
     key: "drawer-item-background-color",
     category: ThemeCategory.Drawer,
-    value: "rgba(66, 70, 76, 0.6)"
+    value: "#404249"
   },
   {
     key: "drawer-item-hover-background-color",
     category: ThemeCategory.Drawer,
-    value: "rgba(66, 70, 76, 0.4)"
+    value: "#35373c"
   }
 ] as const;
 
@@ -265,6 +265,19 @@ export const themePresets: Record<string, ThemePreset> = {
   Default: {
     colors: DefaultTheme,
     maintainers: ["Superkitten", "Asraye"]
+  },
+  "Discord Root": {
+    colors: {
+      "background-color": "#1e1f22",
+      "pane-color": "#313338",
+      "side-pane-color": "#2b2d31",
+      "header-background-color": "#313338",
+      "header-background-color-blur-disabled": "#313338",
+      "primary-color": "#5865f2",
+      "success-color": "#23a559",
+      "alert-color": "#ed4245"
+    },
+    maintainers: ["local"]
   },
   Classic: {
     colors: {

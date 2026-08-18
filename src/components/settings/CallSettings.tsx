@@ -22,6 +22,7 @@ import { downKeys, useGlobalKey } from "@/common/GlobalKey";
 import { toast } from "../ui/custom-portal/CustomPortal";
 import Checkbox from "../ui/Checkbox";
 import Block from "../ui/settings-block/Block";
+import { VoiceMicPreview } from "./VoiceMicPreview";
 
 const Container = styled("div")`
   display: flex;
@@ -65,7 +66,8 @@ interface AvailableConstraint {
   default: boolean;
 }
 type ModifiableConstraints = "echo" | "noise" | "gain";
-function InputDevices() {
+export function InputDevices() {
+  const { voiceUsers } = useStore();
   const [devices, setDevices] = createSignal<MediaDeviceInfo[]>([]);
   const [defaultDeviceId, setDefaultDeviceId] = createSignal<
     string | undefined
@@ -124,14 +126,20 @@ function InputDevices() {
 
   onMount(async () => {
     updateSupportedConstraints();
-    const defaultStream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-      video: false
-    });
-
-    setDefaultDeviceId(
-      defaultStream.getAudioTracks()[0]?.getSettings().deviceId
-    );
+    const activeMicTrack =
+      voiceUsers.currentUser()?.audioStream?.getAudioTracks()[0];
+    if (activeMicTrack) {
+      setDefaultDeviceId(activeMicTrack.getSettings().deviceId);
+    } else {
+      const defaultStream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: false
+      });
+      setDefaultDeviceId(
+        defaultStream.getAudioTracks()[0]?.getSettings().deviceId
+      );
+      defaultStream.getTracks().forEach((track) => track.stop());
+    }
 
     navigator.mediaDevices.enumerateDevices().then((devices) => {
       setDevices(devices.filter((device) => device.kind === "audioinput"));
@@ -154,9 +162,16 @@ function InputDevices() {
           selectedId={
             inputDeviceId() || defaultDeviceId() || t("settings.call.default")
           }
-          onChange={(e) => setInputDeviceId(e.id)}
+          onChange={(e) => {
+            setInputDeviceId(e.id);
+            void voiceUsers.restartMic();
+          }}
         />
       </SettingsBlock>
+      <VoiceMicPreview
+        inputDeviceId={inputDeviceId()}
+        constraints={constraints()}
+      />
       <For each={supportedConstraints()}>
         {(constraint) => (
           <CheckboxOption
@@ -167,6 +182,7 @@ function InputDevices() {
                 ...constraints(),
                 [constraint.key]: val
               });
+              void voiceUsers.applyMicConstraints();
             }}
           />
         )}
@@ -175,7 +191,8 @@ function InputDevices() {
   );
 }
 
-function OutputDevices() {
+export function OutputDevices() {
+  const { voiceUsers } = useStore();
   const [devices, setDevices] = createSignal<MediaDeviceInfo[]>([]);
   const [outputDeviceId, setOutputDeviceId] = useLocalStorage<
     string | undefined
@@ -197,9 +214,11 @@ function OutputDevices() {
   };
 
   onMount(async () => {
-    await navigator.mediaDevices
-      .getUserMedia({ audio: true, video: false })
-      .then((s) => s.getAudioTracks()[0]?.stop());
+    if (!voiceUsers.currentUser()?.channelId) {
+      await navigator.mediaDevices
+        .getUserMedia({ audio: true, video: false })
+        .then((s) => s.getAudioTracks()[0]?.stop());
+    }
     navigator.mediaDevices.enumerateDevices().then((devices) => {
       setDevices(devices.filter((device) => device.kind === "audiooutput"));
     });
@@ -212,7 +231,10 @@ function OutputDevices() {
         selectedId={
           outputDeviceId() || defaultDeviceId() || t("settings.call.default")
         }
-        onChange={(e) => setOutputDeviceId(e.id)}
+        onChange={(e) => {
+          setOutputDeviceId(e.id);
+          voiceUsers.applyOutputDevice();
+        }}
       />
     </SettingsBlock>
   );

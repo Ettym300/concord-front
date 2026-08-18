@@ -19,17 +19,16 @@
   align-items: center;
   flex-direction: column;
   flex-shrink: 0;
-  min-height: 100px;
+  min-height: 120px;
   padding-right: 10px;
   padding-left: 10px;
-  border-bottom: solid 1px rgba(255, 255, 255, 0.1);
-  background-color: var(--header-background-color);
+  border-bottom: solid 1px rgba(0, 0, 0, 0.35);
+  background-color: #1e1f22;
   resize: vertical;
   user-select: none;
-  backdrop-filter: blur(34px);
   &.videoStream {
     display: flex;
-    height: 60vh;
+    height: 72vh;
     padding-right: 0;
     padding-left: 0;
     .voiceParticipants {
@@ -65,6 +64,55 @@
         padding: 3px;
       }
     }
+  }
+
+  &.galleryView,
+  &.stageView {
+    .top {
+      flex-direction: column;
+      padding: 0;
+    }
+  }
+
+  .stageLayout {
+    display: flex;
+    overflow: hidden;
+    flex: 1;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    padding: 8px;
+    gap: 8px;
+    box-sizing: border-box;
+  }
+
+  .stageMain {
+    position: relative;
+    overflow: hidden;
+    flex: 1;
+    min-height: 0;
+    .voiceTile {
+      min-height: 0;
+      height: 100%;
+    }
+  }
+
+  .filmstrip {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-shrink: 0;
+    height: 92px;
+    padding-bottom: 2px;
+    gap: 8px;
+  }
+
+  .filmstripTile {
+    flex: 0 0 148px;
+    width: 148px;
+    height: 84px;
+    min-height: 84px;
   }
 
   &.miniView {
@@ -124,6 +172,79 @@
     gap: 10px;
   }
 
+  .videoGrid {
+    display: grid;
+    overflow: auto;
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    padding: 8px;
+    gap: 8px;
+    box-sizing: border-box;
+    align-content: stretch;
+    grid-auto-rows: 1fr;
+  }
+
+  .voiceTile {
+    position: relative;
+    overflow: hidden;
+    display: block;
+    height: 100%;
+    min-height: 140px;
+    border: solid 2px transparent;
+    border-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.45);
+    cursor: pointer;
+    &.hasVideo {
+      background-color: black;
+    }
+    &.selected,
+    &.talking {
+      border-color: #23a559;
+      box-shadow: 0 0 0 2px #23a559, 0 0 14px rgba(35, 165, 89, 0.55);
+    }
+    &.disconnected {
+      opacity: 0.35;
+    }
+    .videoContainer {
+      position: absolute;
+      inset: 0;
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 6px;
+    }
+  }
+
+  .tileAvatar {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    min-height: inherit;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .tileName,
+  .videoName {
+    position: absolute;
+    z-index: 2;
+    bottom: 8px;
+    left: 8px;
+    display: flex;
+    overflow: hidden;
+    align-items: center;
+    max-width: calc(100% - 16px);
+    padding: 3px 8px;
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    font-size: 12px;
+    gap: 4px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
   .videoContainer {
     position: relative;
     overflow: hidden;
@@ -131,6 +252,9 @@
     margin: 5px;
     border-radius: 8px;
     background-color: black;
+    &.compact {
+      margin: 0;
+    }
     &:hover {
       .videoOverlay {
         transform: translateY(0);
@@ -139,6 +263,12 @@
     video {
       width: 100%;
       height: 100%;
+      object-fit: contain;
+      background-color: black;
+    }
+    &.compact video {
+      position: absolute;
+      inset: 0;
     }
     .videoOverlay {
       position: absolute;

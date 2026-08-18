@@ -35,6 +35,7 @@ import { getCustomSound, playSound } from "@/common/Sound";
 import { getStorageBoolean, StorageKeys } from "@/common/localStorage";
 import { isExperimentEnabled } from "@/common/experiments";
 import { reactNativeAPI } from "@/common/ReactNative";
+import env from "@/common/env";
 
 export type Channel = Omit<RawChannel, "recipient"> & {
   updateLastSeen(this: Channel, timestamp?: number): void;
@@ -233,8 +234,8 @@ async function joinCall(this: Channel, reconnect = false) {
   }
   const { setCurrentChannelId } = useVoiceUsers();
   await loadSimplePeer();
-  if (getStorageBoolean(StorageKeys.voiceUseTurnServers, true)) {
-    await postGenerateCredential();
+  if (!env.DEV_MODE && getStorageBoolean(StorageKeys.voiceUseTurnServers, true)) {
+    await postGenerateCredential().catch(() => {});
   }
   postJoinVoice(this.id, socketClient.id()!).then(() => {
     if (reconnect) return;

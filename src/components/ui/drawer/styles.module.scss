@@ -30,9 +30,7 @@ body .mobile {
   display: flex;
   position: relative;
   overflow: hidden;
-
-  border-top-left-radius: 8px;
-  border-bottom-left-radius: 8px;
+  border-radius: 0;
 
   &.hasLeftDrawer {
     margin-left: 0;
@@ -48,7 +46,8 @@ body .mobile {
 }
 
 .sideBar {
-  padding-right: 4px;
+  padding-right: 0;
+  background: var(--background-color);
   &.hasLeftDrawer {
     padding-right: 0;
   }
@@ -59,11 +58,7 @@ body .mobile {
   background: var(--side-pane-color);
   margin-right: 0;
   margin-left: 0;
-  border-radius: 8px;
-
-  border-bottom-right-radius: 0;
-  border-top-right-radius: 0;
-
+  border-radius: 0;
   width: 100%;
   overflow: hidden;
   position: relative;
@@ -75,7 +70,6 @@ body .mobile {
   background: var(--side-pane-color);
   width: 100%;
   margin-left: 0;
-
   overflow: hidden;
   position: relative;
 }

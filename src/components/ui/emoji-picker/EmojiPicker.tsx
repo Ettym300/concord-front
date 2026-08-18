@@ -360,6 +360,7 @@ const GifPickerImages = (props: {
 }) => {
   let searchesContainer: HTMLDivElement | undefined;
   const [loading, setLoading] = createSignal(false);
+  const [error, setError] = createSignal("");
   const [tenorResponse, setTenorResponse] =
     createSignal<GetTenorImageResponse | null>(null);
 
@@ -369,26 +370,38 @@ const GifPickerImages = (props: {
     if (!props.scrollElement) return;
     if (loading()) return;
 
-    if (!loadMore) setTenorResponse(null);
+    if (!loadMore) {
+      setTenorResponse(null);
+      setError("");
+    }
     setLoading(true);
 
-    const res = await getTenorImages(
-      props.query,
-      loadMore ? tenorResponse()?.next : undefined
-    );
+    try {
+      const res = await getTenorImages(
+        props.query,
+        loadMore ? tenorResponse()?.next : undefined
+      );
 
-    if (!res) {
-      setLoading(false);
-      return;
-    }
+      if (!res) {
+        setLoading(false);
+        return;
+      }
 
-    if (!loadMore) {
-      setTenorResponse(res);
-    } else {
-      setTenorResponse((prev) => ({
-        ...res,
-        results: [...prev!.results, ...res.results]
-      }));
+      if (!loadMore) {
+        setTenorResponse(res);
+      } else {
+        setTenorResponse((prev) => ({
+          ...res,
+          results: [...prev!.results, ...res.results]
+        }));
+      }
+    } catch (err: any) {
+      const message = err?.message || "";
+      setError(
+        message.includes("KLIPY_API_KEY")
+          ? "A busca de GIFs precisa de uma chave da Klipy. Crie uma grátis em klipy.com/developers, coloque em KLIPY_API_KEY no .env do servidor e reinicie o backend."
+          : message || "Não foi possível carregar GIFs."
+      );
     }
     setLoading(false);
   };
@@ -404,6 +417,9 @@ const GifPickerImages = (props: {
 
   return (
     <div class={styles.gifPickerSearches} ref={searchesContainer}>
+      <Show when={error()}>
+        <div class={styles["no-favorites"]}>{error()}</div>
+      </Show>
       <For each={results()}>
         {(gif, index) => (
           <GifPickerImageItem
@@ -419,16 +435,18 @@ const GifPickerImages = (props: {
           />
         )}
       </For>
-      <Rerun on={tenorResponse}>
-        <For each={Array(10).fill(undefined)}>
-          {(_, index) => (
-            <GifPickerImageSkeleton
-              index={index() + results().length}
-              onLoadMore={() => loadImages(true)}
-            />
-          )}
-        </For>
-      </Rerun>
+      <Show when={loading() || (results().length > 0 && !error())}>
+        <Rerun on={tenorResponse}>
+          <For each={Array(10).fill(undefined)}>
+            {(_, index) => (
+              <GifPickerImageSkeleton
+                index={index() + results().length}
+                onLoadMore={() => loadImages(true)}
+              />
+            )}
+          </For>
+        </Rerun>
+      </Show>
     </div>
   );
 };

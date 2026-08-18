@@ -8,6 +8,7 @@ import type SimplePeer from "@thaunknown/simple-peer";
 import useUsers, { User } from "./useUsers";
 import {
   getStorageBoolean,
+  getStorageNumber,
   getStorageObject,
   getStorageString,
   StorageKeys,
@@ -446,6 +447,11 @@ const createPeer = (voiceUser: VoiceUser, signal?: SimplePeer.SignalData) => {
   }
 };
 
+function localVadThreshold() {
+  const sensitivity = getStorageNumber(StorageKeys.voiceInputSensitivity, 25);
+  return 0.02 + (Math.min(95, Math.max(5, sensitivity)) / 100) * 0.16;
+}
+
 function createVadInstance(
   vadStream?: MediaStream,
   originalStream?: MediaStream,
@@ -459,10 +465,35 @@ function createVadInstance(
   const current = currentVoiceUser();
   if (!current) return;
   const audioContext = new AudioContext();
+  void audioContext.resume();
+
+  let stopTimer: number | undefined;
+  const clearStopTimer = () => {
+    if (stopTimer) {
+      window.clearTimeout(stopTimer);
+      stopTimer = undefined;
+    }
+  };
+
+  const setTalking = (talking: boolean) => {
+    setVoiceUsers(current.channelId, userId || account.user()?.id!, {
+      voiceActivity: talking
+    });
+    if (originalStreamTrack) {
+      originalStreamTrack.enabled = talking;
+    }
+  };
+
   const vadInstance = vad(audioContext, vadStream, {
+    fftSize: 1024,
+    smoothingTimeConstant: 0.4,
+    minCaptureFreq: 80,
+    maxCaptureFreq: 4000,
     ...(!userId
       ? {
-          minNoiseLevel: 0.15,
+          minNoiseLevel: localVadThreshold(),
+          maxNoiseLevel: 0.7,
+          avgNoiseMultiplier: 1,
           noiseCaptureDuration: 0
         }
       : {
@@ -473,22 +504,25 @@ function createVadInstance(
         }),
 
     onVoiceStart: function () {
-      setVoiceUsers(current.channelId, userId || account.user()?.id!, {
-        voiceActivity: true
-      });
-      if (originalStreamTrack) {
-        originalStreamTrack.enabled = true;
-      }
+      clearStopTimer();
+      setTalking(true);
     },
     onVoiceStop: function () {
-      setVoiceUsers(current.channelId, userId || account.user()?.id!, {
-        voiceActivity: false
-      });
-      if (originalStreamTrack) {
-        originalStreamTrack.enabled = false;
-      }
+      clearStopTimer();
+      // Keep the mic open between words so speech is not clipped.
+      stopTimer = window.setTimeout(() => {
+        setTalking(false);
+        stopTimer = undefined;
+      }, userId ? 180 : 550);
     }
   });
+
+  const destroy = vadInstance.destroy.bind(vadInstance);
+  vadInstance.destroy = () => {
+    clearStopTimer();
+    destroy();
+    void audioContext.close();
+  };
 
   return vadInstance;
 }
@@ -542,7 +576,12 @@ const disableMic = () => {
       track.stop();
     });
     removeStream(current.audioStream);
-    setCurrentVoiceUser({ ...current, audioStream: null });
+    setCurrentVoiceUser({
+      ...current,
+      audioStream: null,
+      vadInstance: undefined,
+      vadAudioStream: null
+    });
     setVoiceUsers(current.channelId, userId, {
       voiceActivity: false
     });
@@ -551,19 +590,23 @@ const disableMic = () => {
   }
 };
 
-const getUserMic = (shouldLog = true) => {
-  const deviceId = getStorageString(StorageKeys.inputDeviceId, undefined);
+const getStoredMicConstraints = (): MediaTrackConstraints => {
   const constraints = getStorageObject(StorageKeys.voiceMicConstraints, {
     echo: true,
     noise: true,
     gain: true
   });
 
-  const audioConstraints: MediaTrackConstraints = {
+  return {
     echoCancellation: constraints.echo,
     noiseSuppression: constraints.noise,
     autoGainControl: constraints.gain
   };
+};
+
+const getUserMic = (shouldLog = true) => {
+  const deviceId = getStorageString(StorageKeys.inputDeviceId, undefined);
+  const audioConstraints = getStoredMicConstraints();
 
   const rtcLog = (...args: unknown[]) => {
     if (shouldLog) {
@@ -578,20 +621,25 @@ const getUserMic = (shouldLog = true) => {
       video: false
     });
   }
+
+  const parsedDeviceId = JSON.parse(deviceId);
   return navigator.mediaDevices
     .getUserMedia({
-      audio: { deviceId: { exact: JSON.parse(deviceId) } },
+      audio: {
+        ...audioConstraints,
+        deviceId: { exact: parsedDeviceId }
+      },
       video: false
     })
     .then((stream) => {
-      rtcLog("Using Microphone with deviceId", JSON.parse(deviceId));
+      rtcLog("Using Microphone with deviceId", parsedDeviceId);
       return stream;
     })
     .catch(() => {
       rtcLog(
         "RTC",
         "Failed to get microphone with deviceId",
-        JSON.parse(deviceId),
+        parsedDeviceId,
         "Falling back to default microphone"
       );
       return navigator.mediaDevices.getUserMedia({
@@ -599,6 +647,57 @@ const getUserMic = (shouldLog = true) => {
         video: false
       });
     });
+};
+
+const applyConstraintsToStream = async (stream?: MediaStream | null) => {
+  const track = stream?.getAudioTracks()[0];
+  if (!track) return;
+  try {
+    await track.applyConstraints(getStoredMicConstraints());
+  } catch (err) {
+    log("RTC", "Failed to apply microphone constraints", err);
+  }
+};
+
+const applyMicConstraints = async () => {
+  const current = currentVoiceUser();
+  if (!current?.audioStream) return;
+  await applyConstraintsToStream(current.audioStream);
+  await applyConstraintsToStream(current.vadAudioStream);
+};
+
+const applyOutputDevice = () => {
+  const deviceId = getStorageString(StorageKeys.outputDeviceId, undefined);
+  const current = currentVoiceUser();
+  if (!current || !deviceId) return;
+
+  const parsedDeviceId = JSON.parse(deviceId);
+  getVoiceUsersByChannelId(current.channelId).forEach((voiceUser) => {
+    voiceUser.audio?.setSinkId?.(parsedDeviceId);
+  });
+};
+
+const restartMic = async () => {
+  const current = currentVoiceUser();
+  if (!current?.audioStream) return;
+  disableMic();
+  await enableMic();
+};
+
+const updateLocalVadSensitivity = () => {
+  const current = currentVoiceUser();
+  if (!current?.audioStream) return;
+
+  current.vadInstance?.destroy();
+
+  let vadInstance: ReturnType<typeof vad> | undefined;
+  if (voiceMode() === "VOICE_ACTIVITY" && current.vadAudioStream) {
+    vadInstance = createVadInstance(current.vadAudioStream, current.audioStream);
+  } else if (voiceMode() === "OPEN") {
+    vadInstance = createVadInstance(current.audioStream);
+  }
+
+  setCurrentVoiceUser({ ...current, vadInstance });
 };
 
 const enableMic = async () => {
@@ -613,19 +712,15 @@ const enableMic = async () => {
   let vadStream: MediaStream | undefined;
   let vadInstance: ReturnType<typeof vad> | undefined;
 
-  if (voiceMode() === "OPEN") {
-    setVoiceUsers(current.channelId, useAccount().user()?.id!, {
-      voiceActivity: true
-    });
-  }
-
-  if (voiceMode() !== "OPEN") {
+  if (voiceMode() === "PTT") {
     stream.getAudioTracks()[0]!.enabled = false;
   }
 
   if (voiceMode() === "VOICE_ACTIVITY") {
     vadStream = await getUserMic(false);
     vadInstance = createVadInstance(vadStream, stream);
+  } else if (voiceMode() === "OPEN") {
+    vadInstance = createVadInstance(stream);
   }
 
   addStreamToPeers(stream);
@@ -762,6 +857,10 @@ export default function useVoiceUsers() {
     activeRemoteStream,
     videoEnabled,
     toggleMic,
+    applyMicConstraints,
+    applyOutputDevice,
+    restartMic,
+    updateLocalVadSensitivity,
     setVideoStream,
     resetAll,
 

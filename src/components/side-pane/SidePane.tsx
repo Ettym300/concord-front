@@ -49,9 +49,9 @@ export default function SidePane(props: { class?: string }) {
 
   const resizeBar = useResizeBar({
     storageKey: StorageKeys.SIDEBAR_WIDTH,
-    defaultWidth: 65,
-    minWidth: 40,
-    maxWidth: 65,
+    defaultWidth: 72,
+    minWidth: 48,
+    maxWidth: 72,
     element: () => containerEl
   });
 

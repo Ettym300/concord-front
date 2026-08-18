@@ -4,13 +4,14 @@
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  width: 50px;
-  min-width: 40px;
-  max-width: 65px;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  margin-left: 3px;
-  gap: 5px;
+  width: 72px;
+  min-width: 48px;
+  max-width: 72px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  margin-left: 0;
+  background: var(--background-color);
+  gap: 4px;
 }
 
 :global .electron-custom-titlebar {

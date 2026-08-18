@@ -715,7 +715,17 @@
       "callLeave": "Call Leave"
     },
     "call": {
-      "nextCallNotice": "Changes will be applied on your next calls.",
+      "nextCallNotice": "Microphone, speaker and noise suppression changes are applied to your current call.",
+      "audioSettingsTitle": "Audio Input",
+      "micTest": "Mic Test",
+      "micTestStop": "Stop Test",
+      "micTestDescription": "Speak to see your microphone level. Click to hear yourself.",
+      "micTestListening": "You are hearing yourself. Speak to check your audio.",
+      "micTestError": "Could not access the microphone.",
+      "inputSensitivity": "Input Sensitivity",
+      "inputSensitivityDescription": "Drag the marker. If the bar passes the point, your voice is captured.",
+      "inputSensitivityOpen": "Transmitting",
+      "inputSensitivityClosed": "Below threshold",
       "leaveCall": "You must leave the call first",
       "inputDevices": "Input Devices",
       "outputDevices": "Output Devices",
@@ -1114,6 +1124,7 @@
       "leave": "Leave",
       "muted": "Muted",
       "deafened": "Deafened",
+      "audioSettings": "Audio Settings",
       "fullscreen": "Fullscreen",
       "webcamModal": {
         "title": "Webcam Share",
@@ -1159,7 +1170,8 @@
     "inVoice": "In voice"
   },
   "inVoiceActions": {
-    "connectedFor": "Connected for <1>{{time}}</1>"
+    "connectedFor": "Connected for <1>{{time}}</1>",
+    "audioSettings": "Audio Settings"
   },
   "informationDrawer": {
     "info": "Info",

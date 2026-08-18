@@ -529,7 +529,17 @@
             "voiceActivity": "Atividade de voz",
             "pushToTalk": "Apertar para falar",
             "inputDevices": "Dispositivos de entrada",
-            "nextCallNotice": "Mudanças serão aplicadas em suas próximas chamadas.",
+            "nextCallNotice": "Mudanças de microfone, fone e supressão de ruído são aplicadas na chamada atual.",
+            "audioSettingsTitle": "Entrada de áudio",
+            "micTest": "Teste do microfone",
+            "micTestStop": "Parar teste",
+            "micTestDescription": "Fale para ver o nível do microfone. Clique para se ouvir.",
+            "micTestListening": "Você está se ouvindo. Fale para conferir o áudio.",
+            "micTestError": "Não foi possível acessar o microfone.",
+            "inputSensitivity": "Sensibilidade de entrada",
+            "inputSensitivityDescription": "Arraste o marcador. Se a barra passar do ponto, sua voz é captada.",
+            "inputSensitivityOpen": "Transmitindo",
+            "inputSensitivityClosed": "Abaixo do limite",
             "bindButton": "Configurar",
             "leaveCall": "Você deve sair da chamada primeiro",
             "inputConstraints": {
@@ -1215,6 +1225,7 @@
             "muted": "Silenciado(a)",
             "fullscreen": "Tela cheia",
             "deafened": "Ensurdecido(a)",
+            "audioSettings": "Configurações de áudio",
             "webcamModal": {
                 "title": "Compartilhamento de webcam",
                 "error": "Não foi possível compartilhar a câmera",
@@ -1265,7 +1276,8 @@
         "verified": "Este servidor está verificado."
     },
     "inVoiceActions": {
-        "connectedFor": "Conectado há <1>{{time}}</1>"
+        "connectedFor": "Conectado há <1>{{time}}</1>",
+        "audioSettings": "Configurações de áudio"
     },
     "inputFieldActions": {
         "copy": "Copiar",

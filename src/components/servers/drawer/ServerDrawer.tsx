@@ -4,10 +4,7 @@ import {
   Switch,
   Match,
   createSignal,
-  createMemo,
-  createEffect,
-  on,
-  onCleanup
+  createMemo
 } from "solid-js";
 import style from "./style.module.scss";
 import ServerDrawerHeader from "./header/ServerDrawerHeader";
@@ -32,9 +29,7 @@ import RouterEndpoints from "@/common/RouterEndpoints";
 import { Item } from "@/components/ui/Item";
 import { emitDrawerGoToMain } from "@/common/GlobalEvents";
 import { styled } from "solid-styled-components";
-import { FlexColumn, FlexRow } from "@/components/ui/Flexbox";
-import Text from "@/components/ui/Text";
-import { timeSinceDigital } from "@/common/date";
+import { FlexColumn } from "@/components/ui/Flexbox";
 import Avatar from "@/components/ui/Avatar";
 import InVoiceActions from "@/components/InVoiceActions";
 import { useWindowProperties } from "@/common/useWindowProperties";
@@ -256,6 +251,7 @@ function ChannelItem(props: {
   expanded: boolean;
 }) {
   const controller = useServerDrawerController();
+  const { voiceUsers } = useStore();
   const [hovered, setHovered] = createSignal(false);
 
   const onMouseEnter = () => {
@@ -267,6 +263,12 @@ function ChannelItem(props: {
 
   const isPrivateChannel = () =>
     controller?.privateChannelIds().includes(props.channel.id);
+
+  const onChannelDblClick = (event: MouseEvent) => {
+    event.preventDefault();
+    if (voiceUsers.currentUser()?.channelId === props.channel.id) return;
+    props.channel.joinCall();
+  };
 
   return (
     <Show when={props.expanded || props.selected || hasNotifications()}>
@@ -283,6 +285,7 @@ function ChannelItem(props: {
         selected={props.selected}
         alert={!!hasNotifications()}
         onClick={() => emitDrawerGoToMain()}
+        onDblClick={onChannelDblClick}
         class={style.channelItem}
       >
         <ChannelIcon
@@ -307,23 +310,44 @@ function ChannelItem(props: {
   );
 }
 const ChannelVoiceUsersContainer = styled(FlexColumn)`
-  gap: 3px;
-  padding: 5px;
-  padding-left: 10px;
-  background-color: hsl(216deg 7% 28% / 60%);
-  border-radius: 8px;
-  margin-top: 2px;
+  gap: 2px;
+  padding: 2px 4px 4px 22px;
+  margin-bottom: 4px;
 `;
 
-const ChannelVoiceUsersListContainer = styled(FlexRow)`
-  flex-wrap: wrap;
-  gap: 3px;
-  margin-left: 20px;
-`;
-const ChannelVoiceUsersTitle = styled(Text)`
+const VoiceUserRow = styled("div")`
   display: flex;
-  gap: 3px;
   align-items: center;
+  min-width: 0;
+  padding: 4px 6px;
+  overflow: visible;
+  border-radius: 4px;
+  gap: 8px;
+  cursor: default;
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+  }
+`;
+
+const VoiceUserName = styled("span")`
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 13px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+`;
+
+const LiveBadge = styled("span")`
+  flex-shrink: 0;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background-color: #ed4245;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
 `;
 
 function ChannelItemVoiceUsers(props: { channelId: string }) {
@@ -335,59 +359,26 @@ function ChannelItemVoiceUsers(props: { channelId: string }) {
   return (
     <Show when={channelVoiceUsers().length}>
       <ChannelVoiceUsersContainer>
-        <ChannelVoiceUsersTitle size={12}>
-          <Icon name="call" size={16} color="rgba(255,255,255,0.4)" />
-          {t("channelDrawer.inVoice")}
-          <CallTime channelId={props.channelId} />
-        </ChannelVoiceUsersTitle>
-        <ChannelVoiceUsersListContainer>
-          <For each={channelVoiceUsers()}>
-            {(voiceUser) => <Avatar user={voiceUser!.user()} size={20} />}
-          </For>
-        </ChannelVoiceUsersListContainer>
+        <For each={channelVoiceUsers()}>
+          {(voiceUser) => (
+            <VoiceUserRow>
+              <Avatar
+                user={voiceUser!.user()}
+                size={20}
+                voiceIndicator
+                animate={voiceUser!.voiceActivity}
+              />
+              <VoiceUserName>{voiceUser!.user()?.username}</VoiceUserName>
+              <Show when={voiceUsers.videoEnabled(voiceUser!.userId)}>
+                <LiveBadge>LIVE</LiveBadge>
+              </Show>
+              <Show when={!voiceUsers.micEnabled(voiceUser!.userId)}>
+                <Icon name="mic_off" size={14} color="rgba(255,255,255,0.45)" />
+              </Show>
+            </VoiceUserRow>
+          )}
+        </For>
       </ChannelVoiceUsersContainer>
-    </Show>
-  );
-}
-function CallTime(props: { channelId: string }) {
-  const { channels } = useStore();
-  const channel = () => channels.get(props.channelId);
-
-  const [time, setTime] = createSignal<null | string>(null);
-
-  createEffect(
-    on(
-      () => channel()?.callJoinedAt,
-      (joinedAt) => {
-        let interval: number;
-        if (joinedAt) {
-          setTime(timeSinceDigital(joinedAt));
-          interval = window.setInterval(
-            () => setTime(timeSinceDigital(joinedAt)),
-            1000
-          );
-        }
-        onCleanup(() => {
-          if (interval) {
-            clearInterval(interval);
-          }
-        });
-      }
-    )
-  );
-
-  return (
-    <Show when={channel()?.callJoinedAt}>
-      <Text
-        size={12}
-        opacity={0.6}
-        style={{
-          "margin-left": "auto",
-          "font-variant-numeric": "tabular-nums"
-        }}
-      >
-        {time()}
-      </Text>
     </Show>
   );
 }

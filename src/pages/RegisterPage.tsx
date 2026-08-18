@@ -110,7 +110,7 @@ export default function RegisterPage() {
       email(),
       username().trim(),
       password().trim(),
-      verifyToken
+      env.DEV_MODE ? verifyToken || "dev" : verifyToken
     ).catch((err) => {
       setError({ message: err.message, path: err.path });
       turnstileRef?.reset();
@@ -200,12 +200,14 @@ export default function RegisterPage() {
               error={error()}
               onText={setConfirmPassword}
             />
-            <Turnstile
-              ref={turnstileRef}
-              sitekey={env.TURNSTILE_SITEKEY}
-              onVerify={(token) => (verifyToken = token)}
-              autoResetOnExpire={true}
-            />
+            <Show when={!env.DEV_MODE}>
+              <Turnstile
+                ref={turnstileRef}
+                sitekey={env.TURNSTILE_SITEKEY}
+                onVerify={(token) => (verifyToken = token)}
+                autoResetOnExpire={true}
+              />
+            </Show>
             <Show
               when={
                 !error().path ||
