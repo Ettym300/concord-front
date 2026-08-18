@@ -79,10 +79,16 @@ export function VoiceHeader(props: { channelId?: string }) {
   };
 
   const onTileClick = (userId: string) => {
-    setSelectedUserId(userId);
     if (viewMode() === "gallery" && voiceUsers.videoEnabled(userId)) {
+      setSelectedUserId(userId);
       setViewMode("focus");
+      return;
     }
+    if (viewMode() === "focus" && userId === selectedUserId()) {
+      setViewMode("gallery");
+      return;
+    }
+    setSelectedUserId(userId);
   };
 
   return (
@@ -139,6 +145,7 @@ export function VoiceHeader(props: { channelId?: string }) {
                       voiceUser={selectedVoiceUser()!}
                       selected
                       large
+                      onClick={() => onTileClick(selectedVoiceUser()!.userId)}
                     />
                   </div>
                 </Show>
