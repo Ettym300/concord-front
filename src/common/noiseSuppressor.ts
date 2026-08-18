@@ -98,16 +98,53 @@ async function wrapWithNode(
     dest.channelCountMode = "explicit";
     dest.channelInterpretation = "speakers";
     const merger = ctx.createChannelMerger(2);
+    const keepAlive = ctx.createGain();
+    keepAlive.gain.value = 0;
     source.connect(node);
     // Worklet output is mono; HTMLAudio/WebRTC otherwise plays it only on the left.
     node.connect(merger, 0, 0);
     node.connect(merger, 0, 1);
     merger.connect(dest);
+    // Chrome will not send MediaStreamDestination tracks over WebRTC unless the
+    // graph also runs to the context destination and the track is locally consumed.
+    merger.connect(keepAlive);
+    keepAlive.connect(ctx.destination);
+
+    const pump = new Audio();
+    pump.muted = true;
+    pump.volume = 0;
+    pump.srcObject = dest.stream;
+    try {
+      await pump.play();
+    } catch {
+      // autoplay can fail; unmute wait below still helps
+    }
+
+    const processedTrack = dest.stream.getAudioTracks()[0];
+    if (processedTrack) {
+      processedTrack.contentHint = "speech";
+      processedTrack.enabled = true;
+      if (processedTrack.muted) {
+        await Promise.race([
+          new Promise<void>((resolve) => {
+            processedTrack.addEventListener("unmute", () => resolve(), {
+              once: true
+            });
+          }),
+          new Promise<void>((resolve) => window.setTimeout(resolve, 2000))
+        ]);
+      }
+      if (processedTrack.muted) {
+        log("RTC", "Processed mic track is still muted; sending anyway");
+      }
+    }
 
     return {
       stream: dest.stream,
       originalStream: input,
       dispose: () => {
+        pump.pause();
+        pump.srcObject = null;
         dest.stream.getTracks().forEach((track) => track.stop());
         try {
           destroy();
@@ -118,6 +155,7 @@ async function wrapWithNode(
           source.disconnect();
           node.disconnect();
           merger.disconnect();
+          keepAlive.disconnect();
         } catch {
           // already disconnected
         }

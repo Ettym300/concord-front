@@ -753,7 +753,8 @@ const enableMic = async () => {
   }
 
   if (voiceMode() === "VOICE_ACTIVITY") {
-    vadStream = stream.clone();
+    // Detect on the real mic. Cloning the processed dest stream is silent in Chrome.
+    vadStream = wrapped.originalStream.clone();
     vadInstance = createVadInstance(vadStream, stream);
   } else if (voiceMode() === "OPEN") {
     vadInstance = createVadInstance(stream);
