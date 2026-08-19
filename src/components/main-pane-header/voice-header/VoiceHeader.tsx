@@ -734,6 +734,7 @@ export function FloatingLivePreview() {
   let origLeft = 0;
   let origTop = 0;
   const [grabbing, setGrabbing] = createSignal(false);
+  const [hidden, setHidden] = createSignal(false);
 
   const callChannelId = () => voiceUsers.currentUser()?.channelId;
   const viewingChannelId = () =>
@@ -801,6 +802,28 @@ export function FloatingLivePreview() {
   };
 
   createEffect(() => {
+    if (!isAwayFromCall()) setHidden(false);
+  });
+
+  const hidePreview = (event: Event) => {
+    event.stopPropagation();
+    event.preventDefault();
+    dragging = false;
+    setGrabbing(false);
+    setHidden(true);
+  };
+
+  const floatStyle = () =>
+    floatPos()
+      ? {
+          left: `${floatPos()!.left}px`,
+          top: `${floatPos()!.top}px`,
+          right: "auto",
+          bottom: "auto"
+        }
+      : undefined;
+
+  createEffect(() => {
     if (!isAwayFromCall()) return;
     const onResize = () => {
       const pos = floatPos();
@@ -813,37 +836,66 @@ export function FloatingLivePreview() {
 
   return (
     <Show when={isAwayFromCall()}>
-      <div
-        ref={liveRef}
-        class={cn(
-          style.floatingLive,
-          conditionalClass(isMobileWidth() && !floatPos(), style.floatingLiveMobile),
-          conditionalClass(grabbing(), style.floatingLiveGrabbing)
-        )}
-        style={
-          floatPos()
-            ? {
-                left: `${floatPos()!.left}px`,
-                top: `${floatPos()!.top}px`,
-                right: "auto",
-                bottom: "auto"
-              }
-            : undefined
+      <Show
+        when={!hidden()}
+        fallback={
+          <button
+            type="button"
+            class={cn(
+              style.floatingLiveChip,
+              conditionalClass(
+                isMobileWidth() && !floatPos(),
+                style.floatingLiveMobile
+              )
+            )}
+            style={floatStyle()}
+            title={t("mainPaneHeader.voice.showPreview")}
+            onClick={() => setHidden(false)}
+          >
+            <Icon name="videocam" size={16} />
+            <span class={style.floatingLiveChipLabel}>{label()}</span>
+            <span class={style.floatingLiveChipButton}>
+              <Icon name="open_in_full" size={16} />
+            </span>
+          </button>
         }
       >
         <div
-          class={style.floatingLiveBar}
-          onPointerDown={onBarPointerDown}
-          onPointerMove={onBarPointerMove}
-          onPointerUp={onBarPointerUp}
-          onPointerCancel={onBarPointerUp}
+          ref={liveRef}
+          class={cn(
+            style.floatingLive,
+            conditionalClass(
+              isMobileWidth() && !floatPos(),
+              style.floatingLiveMobile
+            ),
+            conditionalClass(grabbing(), style.floatingLiveGrabbing)
+          )}
+          style={floatStyle()}
         >
-          <Icon name="drag_indicator" size={16} />
-          <Icon name="videocam" size={14} />
-          <span>{label()}</span>
+          <div
+            class={style.floatingLiveBar}
+            onPointerDown={onBarPointerDown}
+            onPointerMove={onBarPointerMove}
+            onPointerUp={onBarPointerUp}
+            onPointerCancel={onBarPointerUp}
+          >
+            <Icon name="drag_indicator" size={16} />
+            <Icon name="videocam" size={14} />
+            <span class={style.floatingLiveBarLabel}>{label()}</span>
+            <button
+              type="button"
+              class={style.floatingLiveHide}
+              title={t("mainPaneHeader.voice.hidePreview")}
+              onPointerDown={hidePreview}
+              onPointerUp={(event) => event.stopPropagation()}
+              onClick={hidePreview}
+            >
+              <Icon name="close" size={16} />
+            </button>
+          </div>
+          <VoiceHeader channelId={callChannelId()!} floating />
         </div>
-        <VoiceHeader channelId={callChannelId()!} floating />
-      </div>
+      </Show>
     </Show>
   );
 }

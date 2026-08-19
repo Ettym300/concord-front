@@ -1144,8 +1144,10 @@
         "showChat": "Show chat",
         "hideChannels": "Hide channel list",
         "showChannels": "Show channel list",
-        "hideMembers": "Hide member list",
-        "showMembers": "Show member list",
+      "hideMembers": "Hide member list",
+      "showMembers": "Show member list",
+      "hidePreview": "Hide live preview",
+      "showPreview": "Show live preview",
       "fullscreen": "Fullscreen",
       "webcamModal": {
         "title": "Webcam Share",

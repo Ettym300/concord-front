@@ -1251,6 +1251,8 @@
             "showChannels": "Mostrar canais",
             "hideMembers": "Ocultar membros",
             "showMembers": "Mostrar membros",
+            "hidePreview": "Ocultar preview da live",
+            "showPreview": "Mostrar preview da live",
             "webcamModal": {
                 "title": "Compartilhamento de webcam",
                 "error": "Não foi possível compartilhar a câmera",
