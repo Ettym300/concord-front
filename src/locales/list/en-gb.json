@@ -731,6 +731,8 @@
       "inputSensitivityDescription": "Drag the marker. If the bar passes the point, your voice is captured.",
       "inputSensitivityOpen": "Transmitting",
       "inputSensitivityClosed": "Below threshold",
+      "inputVolume": "Input Volume",
+      "inputVolumeDescription": "Boost or lower the microphone sent in calls. 100% is the original level. Turn off Auto Gain Control if the volume still feels stuck.",
       "leaveCall": "You must leave the call first",
       "inputDevices": "Input Devices",
       "outputDevices": "Output Devices",
@@ -741,7 +743,7 @@
         "noiseSuppression": "Noise Suppression",
         "noiseSuppressionDescription": "Removes background noise (keyboard, fan, room) so others mainly hear your voice.",
         "autoGainControl": "Auto Gain Control",
-        "autoGainControlDescription": "Automatically adjusts volume levels to maintain a consistent signal."
+        "autoGainControlDescription": "Automatically adjusts volume levels to maintain a consistent signal. Can fight the input volume slider."
       },
       "inputMode": "Input Mode",
       "openMic": "Open Mic",

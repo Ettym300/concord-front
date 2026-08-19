@@ -544,6 +544,8 @@
             "inputSensitivityDescription": "Arraste o marcador. Se a barra passar do ponto, sua voz é captada.",
             "inputSensitivityOpen": "Transmitindo",
             "inputSensitivityClosed": "Abaixo do limite",
+            "inputVolume": "Volume de entrada",
+            "inputVolumeDescription": "Aumenta ou diminui o microfone enviado nas chamadas. 100% é o nível original. Se o volume parecer travado, desative o controle automático de ganho.",
             "bindButton": "Configurar",
             "leaveCall": "Você deve sair da chamada primeiro",
             "inputConstraints": {
@@ -552,7 +554,7 @@
                 "noiseSuppression": "Supressão de ruído",
                 "noiseSuppressionDescription": "Remove ruído de fundo (teclado, ventilador, ambiente) para os outros ouvirem principalmente a sua voz.",
                 "autoGainControl": "Controle automático de ganho",
-                "autoGainControlDescription": "Ajusta automaticamente os níveis de volume para manter um sinal estável."
+                "autoGainControlDescription": "Ajusta automaticamente os níveis de volume para manter um sinal estável. Pode atrapalhar o volume de entrada manual."
             },
             "useTurn": "Use os servidores TURN da Cloudflare",
             "useTurnDescription": "Use servidores TURN para obter uma melhor conectividade",

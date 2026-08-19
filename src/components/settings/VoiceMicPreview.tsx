@@ -18,6 +18,8 @@ import { wrapMicWithNoiseSuppression } from "@/common/noiseSuppressor";
 import SettingsBlock from "../ui/settings-block/SettingsBlock";
 import Button from "../ui/Button";
 import { FlexRow } from "../ui/Flexbox";
+import Slider from "../ui/Slider";
+import Text from "../ui/Text";
 
 const BAR_COUNT = 32;
 const BAR_INDEXES = Array.from({ length: BAR_COUNT }, (_, index) => index);
@@ -106,6 +108,19 @@ const StatusText = styled("div")`
   opacity: 0.7;
 `;
 
+const GainRow = styled("div")`
+  display: flex;
+  align-items: center;
+  width: 100%;
+  .slider {
+    flex: 1;
+    width: 100%;
+  }
+  .slider input {
+    width: 100%;
+  }
+`;
+
 function getPreviewConstraints(): MediaTrackConstraints {
   const constraints = getStorageObject(StorageKeys.voiceMicConstraints, {
     echo: true,
@@ -150,10 +165,15 @@ export function VoiceMicPreview(props: {
     StorageKeys.voiceInputSensitivity,
     25
   );
+  const [inputGain, setInputGain] = useLocalStorage(
+    StorageKeys.voiceInputGain,
+    100
+  );
 
   let previewStream: MediaStream | null = null;
   let ownsStream = false;
   let disposeMic: (() => void) | null = null;
+  let setPreviewGain: ((linear: number) => void) | null = null;
   let audioContext: AudioContext | null = null;
   let analyser: AnalyserNode | null = null;
   let loopback: HTMLAudioElement | null = null;
@@ -179,6 +199,7 @@ export function VoiceMicPreview(props: {
     audioContext = null;
     disposeMic?.();
     disposeMic = null;
+    setPreviewGain = null;
     if (ownsStream) {
       previewStream?.getTracks().forEach((track) => track.stop());
     }
@@ -218,6 +239,7 @@ export function VoiceMicPreview(props: {
     audioContext = null;
     disposeMic?.();
     disposeMic = null;
+    setPreviewGain = null;
     if (ownsStream) {
       previewStream?.getTracks().forEach((track) => track.stop());
     }
@@ -255,6 +277,8 @@ export function VoiceMicPreview(props: {
     previewStream = wrapped.stream;
     ownsStream = true;
     disposeMic = wrapped.dispose;
+    setPreviewGain = wrapped.setGain;
+    wrapped.setGain(Math.max(0, Math.min(2, inputGain() / 100)));
     startMeter(wrapped.stream);
   };
 
@@ -298,6 +322,11 @@ export function VoiceMicPreview(props: {
     props.constraints.gain;
     void startPreview();
     onCleanup(() => stopPreview());
+  });
+
+  createEffect(() => {
+    const linear = Math.max(0, Math.min(2, inputGain() / 100));
+    setPreviewGain?.(linear);
   });
 
   const threshold = () => sensitivity() / 100;
@@ -345,6 +374,30 @@ export function VoiceMicPreview(props: {
               {error()}
             </StatusText>
           </Show>
+        </PreviewColumn>
+      </PreviewSettingsBlock>
+      <PreviewSettingsBlock
+        icon="volume_up"
+        label={t("settings.call.inputVolume")}
+        description={t("settings.call.inputVolumeDescription")}
+      >
+        <PreviewColumn>
+          <GainRow>
+            <Slider
+              min={0}
+              max={200}
+              value={inputGain()}
+              onChange={(value) => {
+                const percent = Number(value);
+                if (Number.isNaN(percent)) return;
+                setInputGain(percent);
+                voiceUsers.setMicGain(percent);
+              }}
+            />
+            <Text style={{ width: "48px", "text-align": "center" }}>
+              {inputGain()}%
+            </Text>
+          </GainRow>
         </PreviewColumn>
       </PreviewSettingsBlock>
       <PreviewSettingsBlock

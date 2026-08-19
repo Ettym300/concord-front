@@ -20,7 +20,7 @@ import { downKeys, useGlobalKey } from "@/common/GlobalKey";
 import { arrayEquals } from "@/common/arrayEquals";
 import { LazySimplePeer } from "@/components/LazySimplePeer";
 import { log } from "@/common/logger";
-import { wrapMicWithNoiseSuppression, preloadNoiseSuppressor } from "@/common/noiseSuppressor";
+import { wrapMicWithNoiseSuppression, preloadNoiseSuppressor, getMicGainLinear } from "@/common/noiseSuppressor";
 
 const FALLBACK_ICE_SERVERS: RTCIceServer[] = [
   {
@@ -122,6 +122,7 @@ interface CurrentVoiceUser {
   vadInstance?: ReturnType<typeof vad>;
   vadAudioStream?: MediaStream | null;
   micCleanup?: () => void;
+  micSetGain?: (linear: number) => void;
   micMuted?: boolean;
 }
 const [currentVoiceUser, setCurrentVoiceUser] = createSignal<
@@ -662,7 +663,8 @@ const disableMic = () => {
       originalAudioStream: null,
       vadInstance: undefined,
       vadAudioStream: null,
-      micCleanup: undefined
+      micCleanup: undefined,
+      micSetGain: undefined
     });
     setVoiceUsers(current.channelId, userId, {
       voiceActivity: false
@@ -810,6 +812,7 @@ const enableMic = async () => {
     wrapped.dispose();
     return;
   }
+  wrapped.setGain(getMicGainLinear());
   const stream = wrapped.stream;
 
   let vadStream: MediaStream | undefined;
@@ -835,8 +838,14 @@ const enableMic = async () => {
     originalAudioStream: wrapped.originalStream,
     vadInstance,
     vadAudioStream: vadStream,
-    micCleanup: wrapped.dispose
+    micCleanup: wrapped.dispose,
+    micSetGain: wrapped.setGain
   });
+};
+
+const setMicGain = (percent: number) => {
+  const linear = Math.max(0, Math.min(2, percent / 100));
+  currentVoiceUser()?.micSetGain?.(linear);
 };
 
 const toggleMic = async () => {
@@ -974,6 +983,7 @@ export default function useVoiceUsers() {
     applyMicConstraints,
     applyOutputDevice,
     restartMic,
+    setMicGain,
     updateLocalVadSensitivity,
     setVideoStream,
     resetAll,
