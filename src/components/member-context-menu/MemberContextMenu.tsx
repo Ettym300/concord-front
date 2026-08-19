@@ -337,6 +337,16 @@ export default function MemberContextMenu(props: Props) {
       checked: isLocallyMuted(),
       onClick: onToggleLocalMute
     },
+    {
+      label: voiceUsers.isLiveWatched(props.userId)
+        ? t("userContextMenu.stopWatchingLive")
+        : t("userContextMenu.watchLive"),
+      icon: voiceUsers.isLiveWatched(props.userId)
+        ? "visibility_off"
+        : "visibility",
+      show: inSameCall() && !!voiceUsers.videoEnabled(props.userId),
+      onClick: () => voiceUsers.toggleLiveWatched(props.userId)
+    },
     { separator: true, show: !isSelf() },
     {
       label: t("userContextMenu.addFriend"),

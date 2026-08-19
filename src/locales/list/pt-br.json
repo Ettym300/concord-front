@@ -721,6 +721,8 @@
         "mention": "Mencionar",
         "startCall": "Iniciar chamada",
         "muteUser": "Silenciar",
+        "watchLive": "Assistir live",
+        "stopWatchingLive": "Parar de assistir live",
         "addFriend": "Adicionar amigo",
         "removeFriend": "Remover amigo",
         "block": "Bloquear",
@@ -1253,6 +1255,8 @@
             "showMembers": "Mostrar membros",
             "hidePreview": "Ocultar preview da live",
             "showPreview": "Mostrar preview da live",
+            "watchLive": "Assistir",
+            "stopWatchingLive": "Parar de assistir esta live",
             "webcamModal": {
                 "title": "Compartilhamento de webcam",
                 "error": "Não foi possível compartilhar a câmera",

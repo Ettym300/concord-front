@@ -43,7 +43,7 @@ export function VoiceHeader(props: { channelId?: string; floating?: boolean }) {
       headerRef.style.minHeight = "";
     }
   });
-  const { voiceUsers } = useStore();
+  const { voiceUsers, account } = useStore();
 
   const [selectedUserId, setSelectedUserId] = createSignal<null | string>(null);
 
@@ -92,7 +92,21 @@ export function VoiceHeader(props: { channelId?: string; floating?: boolean }) {
   };
 
   const onTileClick = (userId: string) => {
-    if (displayMode() === "gallery" && voiceUsers.videoEnabled(userId)) {
+    const isSelf = userId === account.user()?.id;
+    if (
+      voiceUsers.videoEnabled(userId) &&
+      !isSelf &&
+      !voiceUsers.isLiveWatched(userId)
+    ) {
+      voiceUsers.setLiveWatched(userId, true);
+      setSelectedUserId(userId);
+      return;
+    }
+    if (
+      displayMode() === "gallery" &&
+      voiceUsers.videoEnabled(userId) &&
+      voiceUsers.isLiveWatched(userId)
+    ) {
       setSelectedUserId(userId);
       setDisplayMode("focus");
       return;
@@ -205,6 +219,8 @@ function VoiceTile(props: {
     y: number;
   } | null>(null);
   const stream = () => voiceUsers.videoEnabled(props.voiceUser.userId);
+  const watching = () => voiceUsers.isLiveWatched(props.voiceUser.userId);
+  const showVideo = () => !!stream() && watching();
   const isSelf = () => props.voiceUser.userId === account.user()?.id;
   const user = () => props.voiceUser.user();
   const talking = () => props.voiceUser.voiceActivity;
@@ -222,7 +238,7 @@ function VoiceTile(props: {
       <div
         class={cn(
           style.voiceTile,
-          conditionalClass(!!stream(), style.hasVideo),
+          conditionalClass(showVideo(), style.hasVideo),
           conditionalClass(props.selected, style.selected),
           conditionalClass(talking(), style.talking),
           conditionalClass(props.large, style.large),
@@ -238,7 +254,7 @@ function VoiceTile(props: {
         }}
       >
       <Show
-        when={stream()}
+        when={showVideo()}
         fallback={
           <div class={style.tileAvatar}>
             <Show when={user()}>
@@ -259,13 +275,34 @@ function VoiceTile(props: {
           compact
         />
       </Show>
-      <Show when={!stream()}>
+      <Show when={!showVideo()}>
         <div class={style.tileName}>
           <Show when={isMuted()}>
             <Icon name="mic_off" size={14} color="white" />
           </Show>
           {user()?.username}
         </div>
+      </Show>
+      <Show when={!!stream() && !isSelf() && !watching()}>
+        <div class={style.watchLiveOverlay}>
+          <span class={style.livePausedBadge}>LIVE</span>
+          <span class={style.watchLiveLabel}>
+            {t("mainPaneHeader.voice.watchLive")}
+          </span>
+        </div>
+      </Show>
+      <Show when={!!stream() && !isSelf() && watching()}>
+        <button
+          type="button"
+          class={style.unwatchLive}
+          title={t("mainPaneHeader.voice.stopWatchingLive")}
+          onClick={(event) => {
+            event.stopPropagation();
+            voiceUsers.setLiveWatched(props.voiceUser.userId, false);
+          }}
+        >
+          <Icon name="visibility_off" size={16} />
+        </button>
       </Show>
       </div>
     </>

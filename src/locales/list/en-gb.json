@@ -974,6 +974,8 @@
         "mention": "Mention",
         "startCall": "Start Call",
         "muteUser": "Mute",
+        "watchLive": "Watch Live",
+        "stopWatchingLive": "Stop Watching Live",
         "addFriend": "Add Friend",
         "removeFriend": "Remove Friend",
         "block": "Block",
@@ -1148,6 +1150,8 @@
       "showMembers": "Show member list",
       "hidePreview": "Hide live preview",
       "showPreview": "Show live preview",
+      "watchLive": "Watch",
+      "stopWatchingLive": "Stop watching this live",
       "fullscreen": "Fullscreen",
       "webcamModal": {
         "title": "Webcam Share",

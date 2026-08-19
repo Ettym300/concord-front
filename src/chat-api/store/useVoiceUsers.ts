@@ -92,6 +92,9 @@ type StreamWithTracks = {
 export const [cachedVolumes, setCachedVolumes] = createStore<
   Record<string, number>
 >({});
+const [watchedLives, setWatchedLives] = createStore<Record<string, boolean>>(
+  {}
+);
 export type ConnectionStatus = "CONNECTED" | "DISCONNECTED" | "CONNECTING";
 
 export type VoiceUser = RawVoice & {
@@ -237,6 +240,7 @@ const setCurrentChannelId = (channelId: string | null, reconnect = false) => {
     current?.videoStream?.getTracks().forEach((track) => {
       track.stop();
     });
+    setWatchedLives(reconcile({}));
 
     return;
   }
@@ -490,6 +494,9 @@ const createPeer = (voiceUser: VoiceUser, signal?: SimplePeer.SignalData) => {
     };
 
     pushVoiceUserTrack(voiceUser, track, stream);
+    if (track.kind === "video") {
+      applyIncomingVideoWatch(userId, track);
+    }
 
     const newVoiceUser = getVoiceUser(channelId, userId);
 
@@ -641,6 +648,49 @@ const pushVoiceUserTrack = (
     stream,
     tracks: [track]
   });
+};
+
+const remoteVideoTracks = (userId: string) => {
+  const current = currentVoiceUser();
+  if (!current) return [];
+  const voiceUser = getVoiceUser(current.channelId, userId);
+  const tracks: MediaStreamTrack[] = [];
+  voiceUser?.streamWithTracks?.forEach((entry) => {
+    entry.tracks.forEach((track) => {
+      if (track.kind === "video") tracks.push(track);
+    });
+  });
+  return tracks;
+};
+
+const applyLiveWatch = (userId: string, watch: boolean) => {
+  remoteVideoTracks(userId).forEach((track) => {
+    track.enabled = watch;
+  });
+};
+
+const applyIncomingVideoWatch = (userId: string, track: MediaStreamTrack) => {
+  if (userId === useAccount().user()?.id) {
+    track.enabled = true;
+    return;
+  }
+  const watch = !!watchedLives[userId];
+  track.enabled = watch;
+};
+
+const isLiveWatched = (userId: string) => {
+  if (useAccount().user()?.id === userId) return true;
+  return !!watchedLives[userId];
+};
+
+const setLiveWatched = (userId: string, watch: boolean) => {
+  if (useAccount().user()?.id === userId) return;
+  setWatchedLives(userId, watch);
+  applyLiveWatch(userId, watch);
+};
+
+const toggleLiveWatched = (userId: string) => {
+  setLiveWatched(userId, !isLiveWatched(userId));
 };
 
 const disableMic = () => {
@@ -979,6 +1029,9 @@ export default function useVoiceUsers() {
     currentUser: currentVoiceUser,
     activeRemoteStream,
     videoEnabled,
+    isLiveWatched,
+    setLiveWatched,
+    toggleLiveWatched,
     toggleMic,
     applyMicConstraints,
     applyOutputDevice,
