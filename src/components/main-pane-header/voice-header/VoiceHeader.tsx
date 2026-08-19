@@ -13,6 +13,7 @@ import {
 } from "solid-js";
 import { ScreenShareModal } from "../ScreenShareModal";
 import { WebcamModal } from "../WebcamModal";
+import { LiveStreamModal } from "../LiveStreamModal";
 import { VoiceAudioSettingsModal } from "@/components/settings/VoiceAudioSettingsModal";
 import { useCustomPortal } from "@/components/ui/custom-portal/CustomPortal";
 import { useWindowProperties } from "@/common/useWindowProperties";
@@ -51,6 +52,15 @@ export function VoiceHeader(props: { channelId?: string; floating?: boolean }) {
     voiceUsers.getVoiceUsersByChannelId(props.channelId!);
   const videoStreamingUsers = () =>
     channelVoiceUsers().filter((v) => voiceUsers.videoEnabled(v.userId));
+  const isHiddenLive = (user: VoiceUser) => {
+    if (user.userId === account.user()?.id) return false;
+    if (!voiceUsers.videoEnabled(user.userId)) return false;
+    return !voiceUsers.isLiveWatched(user.userId);
+  };
+  const visibleStageUsers = () =>
+    channelVoiceUsers().filter((user) => !isHiddenLive(user));
+  const hiddenLiveUsers = () =>
+    channelVoiceUsers().filter((user) => isHiddenLive(user));
 
   createEffect(
     on(videoStreamingUsers, (now, prev) => {
@@ -68,10 +78,10 @@ export function VoiceHeader(props: { channelId?: string; floating?: boolean }) {
   );
 
   const selectedVoiceUser = () => {
-    if (!selectedUserId()) return channelVoiceUsers()[0];
+    const visible = visibleStageUsers();
+    if (!selectedUserId()) return visible[0];
     return (
-      channelVoiceUsers().find((v) => v.userId === selectedUserId()) ||
-      channelVoiceUsers()[0]
+      visible.find((v) => v.userId === selectedUserId()) || visible[0]
     );
   };
 
@@ -83,8 +93,17 @@ export function VoiceHeader(props: { channelId?: string; floating?: boolean }) {
   const setDisplayMode = (mode: VoiceViewMode) =>
     props.floating ? setFloatingViewMode(mode) : setViewMode(mode);
 
+  createEffect(() => {
+    const selected = selectedUserId();
+    const visible = visibleStageUsers();
+    if (selected && visible.every((user) => user.userId !== selected)) {
+      setSelectedUserId(visible[0]?.userId ?? null);
+      if (displayMode() === "focus") setDisplayMode("gallery");
+    }
+  });
+
   const gridColumns = () => {
-    const count = channelVoiceUsers().length;
+    const count = visibleStageUsers().length;
     if (count <= 1) return 1;
     if (count <= 4) return 2;
     if (count <= 9) return 3;
@@ -148,21 +167,27 @@ export function VoiceHeader(props: { channelId?: string; floating?: boolean }) {
               />
             </Show>
             <Show when={isSomeoneVideoStreaming() && displayMode() === "gallery"}>
-              <div
-                class={style.videoGrid}
-                style={{
-                  "grid-template-columns": `repeat(${gridColumns()}, minmax(0, 1fr))`
-                }}
-              >
-                <For each={channelVoiceUsers()}>
-                  {(voiceUser) => (
-                    <VoiceTile
-                      voiceUser={voiceUser!}
-                      selected={voiceUser.userId === selectedUserId()}
-                      onClick={() => onTileClick(voiceUser.userId)}
-                    />
-                  )}
-                </For>
+              <div class={style.galleryLayout}>
+                <div
+                  class={style.videoGrid}
+                  style={{
+                    "grid-template-columns": `repeat(${gridColumns()}, minmax(0, 1fr))`
+                  }}
+                >
+                  <For each={visibleStageUsers()}>
+                    {(voiceUser) => (
+                      <VoiceTile
+                        voiceUser={voiceUser!}
+                        selected={voiceUser.userId === selectedUserId()}
+                        onClick={() => onTileClick(voiceUser.userId)}
+                      />
+                    )}
+                  </For>
+                </div>
+                <HiddenLivesBar
+                  users={hiddenLiveUsers()}
+                  onWatch={onTileClick}
+                />
               </div>
             </Show>
             <Show when={isSomeoneVideoStreaming() && displayMode() === "focus"}>
@@ -178,7 +203,7 @@ export function VoiceHeader(props: { channelId?: string; floating?: boolean }) {
                   </div>
                 </Show>
                 <div class={style.filmstrip}>
-                  <For each={channelVoiceUsers()}>
+                  <For each={visibleStageUsers()}>
                     {(voiceUser) => (
                       <VoiceTile
                         voiceUser={voiceUser!}
@@ -189,6 +214,10 @@ export function VoiceHeader(props: { channelId?: string; floating?: boolean }) {
                     )}
                   </For>
                 </div>
+                <HiddenLivesBar
+                  users={hiddenLiveUsers()}
+                  onWatch={onTileClick}
+                />
               </div>
             </Show>
           </div>
@@ -199,6 +228,32 @@ export function VoiceHeader(props: { channelId?: string; floating?: boolean }) {
             showViewToggle={!!isSomeoneVideoStreaming()}
           />
         </Show>
+      </div>
+    </Show>
+  );
+}
+
+function HiddenLivesBar(props: {
+  users: VoiceUser[];
+  onWatch: (userId: string) => void;
+}) {
+  return (
+    <Show when={props.users.length}>
+      <div class={style.hiddenLives}>
+        <div class={style.hiddenLivesLabel}>
+          {t("mainPaneHeader.voice.hiddenLives")}
+        </div>
+        <div class={style.hiddenLivesList}>
+          <For each={props.users}>
+            {(voiceUser) => (
+              <VoiceTile
+                voiceUser={voiceUser!}
+                filmstrip
+                onClick={() => props.onWatch(voiceUser.userId)}
+              />
+            )}
+          </For>
+        </div>
       </div>
     </Show>
   );
@@ -626,16 +681,16 @@ function VoiceActions(props: {
     createPortal((close) => <ScreenShareModal close={close} />);
   };
 
+  const onLiveControlsClick = () => {
+    createPortal((close) => <LiveStreamModal close={close} />);
+  };
+
   const onWebCamClick = () => {
     return createPortal((close) => <WebcamModal close={close} />);
   };
 
   const onAudioSettingsClick = () => {
     createPortal((close) => <VoiceAudioSettingsModal close={close} />);
-  };
-
-  const onStopScreenShareClick = () => {
-    voiceUsers.setVideoStream(null);
   };
 
   return (
@@ -681,9 +736,10 @@ function VoiceActions(props: {
         </Show>
         <Show when={currentVoiceUser()?.videoStream}>
           <Button
-            iconName="desktop_access_disabled"
-            onClick={onStopScreenShareClick}
-            color="var(--alert-color)"
+            iconName="monitor"
+            color="var(--success-color)"
+            hoverText={t("mainPaneHeader.voice.liveControls.title")}
+            onClick={onLiveControlsClick}
           />
         </Show>
         <VoiceDeafenActions />

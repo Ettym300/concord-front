@@ -722,7 +722,7 @@
         "startCall": "Iniciar chamada",
         "muteUser": "Silenciar",
         "watchLive": "Assistir live",
-        "stopWatchingLive": "Parar de assistir live",
+        "stopWatchingLive": "Ocultar live",
         "addFriend": "Adicionar amigo",
         "removeFriend": "Remover amigo",
         "block": "Bloquear",
@@ -1256,7 +1256,8 @@
             "hidePreview": "Ocultar preview da live",
             "showPreview": "Mostrar preview da live",
             "watchLive": "Assistir",
-            "stopWatchingLive": "Parar de assistir esta live",
+            "stopWatchingLive": "Ocultar esta live",
+            "hiddenLives": "Lives ocultas",
             "webcamModal": {
                 "title": "Compartilhamento de webcam",
                 "error": "Não foi possível compartilhar a câmera",
@@ -1268,7 +1269,16 @@
                 "framerate": "Taxa de quadros",
                 "shareSystemAudio": "Compartilhar áudio do sistema",
                 "shareAppAudio": "Compartilhar áudio do aplicativo",
-                "chooseWindowButton": "Selecionar janela"
+                "chooseWindowButton": "Selecionar janela",
+                "bitrate": "Bitrate",
+                "bitrateHint": "Digite um valor em Mbps (0,25 a 8).",
+                "changeTitle": "Trocar tela da live"
+            },
+            "liveControls": {
+                "title": "Opções da live",
+                "changeScreen": "Trocar tela",
+                "changeCamera": "Trocar câmera",
+                "stopLive": "Parar live"
             }
         },
         "pins": {

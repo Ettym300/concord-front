@@ -15,11 +15,97 @@ import useStore from "@/chat-api/store/useStore";
 import { ElectronCaptureSource, electronWindowAPI } from "@/common/Electron";
 import Checkbox from "../ui/Checkbox";
 import { t } from "@nerimity/i18lite";
+import { StorageKeys, useLocalStorage } from "@/common/localStorage";
+import Input from "../ui/input/Input";
 
 const QualityOptions = ["480p", "720p", "1080p"] as const;
 const FramerateOptions = ["1fps 💀", "10fps", "30fps", "60fps"] as const;
+export const LIVE_BITRATE_OPTIONS = [1000, 2500, 4000, 8000] as const;
+
+export function bitrateLabel(kbps: number) {
+  return `${kbps / 1000} Mbps`;
+}
+
+function formatMbps(kbps: number) {
+  const mbps = kbps / 1000;
+  return Number.isInteger(mbps)
+    ? String(mbps)
+    : mbps.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
+}
+
+export function LiveBitratePicker() {
+  const { voiceUsers } = useStore();
+  const [bitrate, setBitrate] = useLocalStorage(
+    StorageKeys.voiceLiveBitrate,
+    2500
+  );
+  const [draft, setDraft] = createSignal(formatMbps(bitrate()));
+
+  const applyKbps = (kbps: number) => {
+    setBitrate(kbps);
+    voiceUsers.setLiveBitrate(kbps);
+    setDraft(formatMbps(voiceUsers.getLiveBitrateKbps()));
+  };
+
+  const applyDraft = () => {
+    const parsed = Number(draft().replace(",", "."));
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      setDraft(formatMbps(bitrate()));
+      return;
+    }
+    applyKbps(Math.round(parsed * 1000));
+  };
+
+  return (
+    <>
+      <OptionTitle>
+        {t("mainPaneHeader.voice.screenShareModal.bitrate")}
+      </OptionTitle>
+      <OptionContainer>
+        <For each={LIVE_BITRATE_OPTIONS}>
+          {(kbps) => (
+            <Button
+              onClick={() => applyKbps(kbps)}
+              label={bitrateLabel(kbps)}
+              primary={bitrate() === kbps}
+            />
+          )}
+        </For>
+      </OptionContainer>
+      <BitrateInputRow>
+        <Input
+          type="number"
+          value={draft()}
+          placeholder="2.5"
+          suffix="Mbps"
+          margin={0}
+          onText={setDraft}
+          onBlur={applyDraft}
+          onChange={() => applyDraft()}
+        />
+        <BitrateHint>
+          {t("mainPaneHeader.voice.screenShareModal.bitrateHint")}
+        </BitrateHint>
+      </BitrateInputRow>
+    </>
+  );
+}
 
 const OptionContainer = styled(FlexRow)``;
+
+const BitrateInputRow = styled("div")`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 180px;
+  margin: 8px 0 4px 5px;
+`;
+
+const BitrateHint = styled(Text)`
+  margin-left: 2px;
+  opacity: 0.65;
+  font-size: 11px;
+`;
 
 const ActionButtonsContainer = styled(FlexRow)`
   justify-content: flex-end;
@@ -143,7 +229,11 @@ export function ScreenShareModal(props: { close: () => void }) {
 
   return (
     <LegacyModal
-      title={t("mainPaneHeader.voice.screenShareModal.title")}
+      title={
+        voiceUsers.currentUser()?.videoStream
+          ? t("mainPaneHeader.voice.screenShareModal.changeTitle")
+          : t("mainPaneHeader.voice.screenShareModal.title")
+      }
       close={props.close}
       actionButtons={ActionButtons}
     >
@@ -176,6 +266,7 @@ export function ScreenShareModal(props: { close: () => void }) {
           )}
         </For>
       </OptionContainer>
+      <LiveBitratePicker />
       <Show when={electronWindowAPI()?.isElectron && electronSourceId()}>
         <Checkbox
           label={

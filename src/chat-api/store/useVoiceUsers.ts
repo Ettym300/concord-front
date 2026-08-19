@@ -10,6 +10,7 @@ import {
   getStorageBoolean,
   getStorageNumber,
   getStorageObject,
+  setStorageObject,
   getStorageString,
   StorageKeys,
   useVoiceInputMode
@@ -423,6 +424,9 @@ const createPeer = (voiceUser: VoiceUser, signal?: SimplePeer.SignalData) => {
   peer.on("connect", () => {
     log("RTC", "Connected to", voiceUser.user().username + "!");
     updateConnectionStatus(voiceUser, "CONNECTED");
+    window.setTimeout(() => {
+      void applyOutgoingVideoBitrate(voiceUser);
+    }, 400);
   });
   peer.on("end", () => {
     log("RTC", "Disconnected from", voiceUser.user().username + ".");
@@ -928,6 +932,55 @@ const setVideoStream = (stream: MediaStream | null) => {
     setCurrentVoiceUser({ ...current, videoStream: null });
     videoTrack.onended = null;
   };
+  window.setTimeout(() => {
+    void applyOutgoingVideoBitrate();
+  }, 400);
+};
+
+function peerConnection(peer?: SimplePeer.Instance) {
+  return (peer as { _pc?: RTCPeerConnection } | undefined)?._pc;
+}
+
+export function getLiveBitrateKbps() {
+  const stored = getStorageObject(StorageKeys.voiceLiveBitrate, 2500);
+  const value = typeof stored === "number" ? stored : 2500;
+  return Math.max(250, Math.min(8000, value));
+}
+
+const applyOutgoingVideoBitrate = async (voiceUser?: VoiceUser) => {
+  const current = currentVoiceUser();
+  if (!current?.videoStream) return;
+  const maxBitrate = getLiveBitrateKbps() * 1000;
+  const targets = voiceUser
+    ? [voiceUser]
+    : getVoiceUsersByChannelId(current.channelId);
+
+  for (const user of targets) {
+    const pc = peerConnection(user.peer);
+    if (!pc) continue;
+    for (const sender of pc.getSenders()) {
+      if (sender.track?.kind !== "video") continue;
+      try {
+        const params = sender.getParameters();
+        if (!params.encodings?.length) {
+          params.encodings = [{ maxBitrate }];
+        } else {
+          params.encodings.forEach((encoding) => {
+            encoding.maxBitrate = maxBitrate;
+          });
+        }
+        await sender.setParameters(params);
+      } catch (err) {
+        log("RTC", "Failed to set live bitrate", err);
+      }
+    }
+  }
+};
+
+const setLiveBitrate = (kbps: number) => {
+  const clamped = Math.max(250, Math.min(8000, Math.round(kbps)));
+  setStorageObject(StorageKeys.voiceLiveBitrate, clamped);
+  void applyOutgoingVideoBitrate();
 };
 
 const removeStream = (stream: MediaStream) => {
@@ -1039,6 +1092,8 @@ export default function useVoiceUsers() {
     setMicGain,
     updateLocalVadSensitivity,
     setVideoStream,
+    setLiveBitrate,
+    getLiveBitrateKbps,
     resetAll,
 
     isLocalMicMuted: () => !currentVoiceUser()?.audioStream,

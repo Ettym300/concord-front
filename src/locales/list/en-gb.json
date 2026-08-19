@@ -975,7 +975,7 @@
         "startCall": "Start Call",
         "muteUser": "Mute",
         "watchLive": "Watch Live",
-        "stopWatchingLive": "Stop Watching Live",
+        "stopWatchingLive": "Hide Live",
         "addFriend": "Add Friend",
         "removeFriend": "Remove Friend",
         "block": "Block",
@@ -1151,7 +1151,8 @@
       "hidePreview": "Hide live preview",
       "showPreview": "Show live preview",
       "watchLive": "Watch",
-      "stopWatchingLive": "Stop watching this live",
+      "stopWatchingLive": "Hide this live",
+      "hiddenLives": "Hidden lives",
       "fullscreen": "Fullscreen",
       "webcamModal": {
         "title": "Webcam Share",
@@ -1164,7 +1165,16 @@
         "framerate": "Framerate",
         "shareSystemAudio": "Share System Audio",
         "shareAppAudio": "Share App Audio",
-        "chooseWindowButton": "Choose Window"
+        "chooseWindowButton": "Choose Window",
+        "bitrate": "Bitrate",
+        "bitrateHint": "Type a value in Mbps (0.25 to 8).",
+        "changeTitle": "Change Live Screen"
+      },
+      "liveControls": {
+        "title": "Live options",
+        "changeScreen": "Change screen",
+        "changeCamera": "Change camera",
+        "stopLive": "Stop live"
       }
     }
   },

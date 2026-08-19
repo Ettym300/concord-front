@@ -77,6 +77,47 @@
     }
   }
 
+  .galleryLayout {
+    display: flex;
+    overflow: hidden;
+    flex: 1;
+    flex-direction: column;
+    width: 100%;
+    min-height: 0;
+  }
+
+  .hiddenLives {
+    display: flex;
+    overflow: hidden;
+    flex-shrink: 0;
+    align-items: center;
+    width: 100%;
+    padding: 6px 10px 10px;
+    gap: 10px;
+    box-sizing: border-box;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(0, 0, 0, 0.22);
+  }
+
+  .hiddenLivesLabel {
+    flex-shrink: 0;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+  }
+
+  .hiddenLivesList {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex: 1;
+    align-items: flex-start;
+    min-width: 0;
+    gap: 8px;
+  }
+
   .stageLayout {
     display: flex;
     overflow: hidden;
@@ -513,6 +554,14 @@
 .floating .videoGrid {
   padding: 6px;
   gap: 6px;
+}
+
+.floating .hiddenLives {
+  padding: 4px 6px;
+}
+
+.floating .hiddenLivesLabel {
+  display: none;
 }
 
 .floating .stageLayout {

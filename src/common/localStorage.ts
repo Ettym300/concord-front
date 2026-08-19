@@ -28,6 +28,7 @@ export const StorageKeys = {
   voiceMicConstraints: "voiceMicConstraints",
   voiceInputSensitivity: "voiceInputSensitivity",
   voiceInputGain: "voiceInputGain",
+  voiceLiveBitrate: "voiceLiveBitrate",
   voiceUseTurnServers: "useTurnServers",
   PTTBoundKeys: "pttBoundKeys",
   USE_TWITTER_EMBED: "useTwitterEmbed",

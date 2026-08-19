@@ -11,6 +11,7 @@ import Button from "./ui/Button";
 import { Trans } from "@nerimity/solid-i18lite";
 import { useCustomPortal } from "./ui/custom-portal/CustomPortal";
 import { ScreenShareModal } from "./main-pane-header/ScreenShareModal";
+import { LiveStreamModal } from "./main-pane-header/LiveStreamModal";
 import { VoiceAudioSettingsModal } from "./settings/VoiceAudioSettingsModal";
 import { t } from "@nerimity/i18lite";
 
@@ -102,6 +103,10 @@ function ActionButtons(props: { channelId: string }) {
     createPortal((close) => <ScreenShareModal close={close} />);
   };
 
+  const onLiveControlsClick = () => {
+    createPortal((close) => <LiveStreamModal close={close} />);
+  };
+
   const onAudioSettingsClick = () => {
     createPortal((close) => <VoiceAudioSettingsModal close={close} />);
   };
@@ -119,10 +124,11 @@ function ActionButtons(props: { channelId: string }) {
       <Show when={currentVoiceUser()?.videoStream}>
         <Button
           margin={0}
-          iconName="desktop_access_disabled"
+          iconName="monitor"
           iconSize={16}
-          color="var(--alert-color)"
-          onClick={() => voiceUsers.setVideoStream(null)}
+          color="var(--success-color)"
+          hoverText={t("mainPaneHeader.voice.liveControls.title")}
+          onClick={onLiveControlsClick}
         />
       </Show>
       <VoiceDeafenButton channelId={props.channelId} />
