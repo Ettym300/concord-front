@@ -371,7 +371,7 @@ const pushFailedMessage = (channelId: string, content: string) => {
     buttons: [],
     replyMessages: [],
     createdBy: {
-      username: "Nerimity",
+      username: "Concord",
       tag: "owo",
       bot: true,
       badges: 0,
