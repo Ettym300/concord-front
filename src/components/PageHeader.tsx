@@ -5,7 +5,7 @@ import { getUserDetailsRequest } from "@/chat-api/services/UserService";
 import { RawUser } from "@/chat-api/RawData";
 import { getStorageString, StorageKeys } from "@/common/localStorage";
 import Icon from "./ui/icon/Icon";
-import { appLogoMarkUrl } from "@/common/worldEvents";
+import { appLogoUrl } from "@/common/worldEvents";
 import { useTransContext } from "@nerimity/solid-i18lite";
 
 import { Skeleton } from "./ui/skeleton/Skeleton";
@@ -67,7 +67,7 @@ const Logo = styled("img")`
   width: 30px;
   height: 30px;
   border-radius: 8px;
-  object-fit: cover;
+  object-fit: contain;
   background-color: rgba(0, 0, 0, 0.86);
   backdrop-filter: blur(34px);
 `;
@@ -159,7 +159,7 @@ export default function PageHeader(props: { hideAccountInfo?: boolean }) {
   return (
     <HeaderContainer class="header-container">
       <A href="/" class={titleContainerStyle}>
-        <Logo src={appLogoMarkUrl()} alt="Concord" />
+        <Logo src={appLogoUrl()} alt="Concord" />
         <Title>Concord</Title>
       </A>
       {/* Use navigation container here, saves repeating code.. AHEM....*/}

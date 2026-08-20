@@ -3,7 +3,7 @@
   width: 22px;
   margin-left: 10px;
   border-radius: 6px;
-  object-fit: cover;
+  object-fit: contain;
   pointer-events: none;
 }
 
