@@ -6,7 +6,7 @@ import { Modal } from "../ui/modal";
 import Button from "../ui/Button";
 import { useCustomPortal } from "../ui/custom-portal/CustomPortal";
 import { useWindowProperties } from "@/common/useWindowProperties";
-import { ScreenShareModal, LiveBitratePicker } from "./ScreenShareModal";
+import { ScreenShareModal, LiveBitratePicker, HeavyGameModePicker } from "./ScreenShareModal";
 import { WebcamModal } from "./WebcamModal";
 
 const Body = styled("div")`
@@ -65,6 +65,7 @@ export function LiveStreamModal(props: { close: () => void }) {
             />
           </Actions>
           <LiveBitratePicker />
+          <HeavyGameModePicker />
           <Button
             iconName="stop_screen_share"
             color="var(--alert-color)"

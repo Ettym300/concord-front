@@ -1272,6 +1272,9 @@
                 "chooseWindowButton": "Selecionar janela",
                 "bitrate": "Bitrate",
                 "bitrateHint": "Digite um valor em Mbps (0,25 a 8).",
+                "bitrateHeavyGameHint": "Modo jogo pesado limita a live a {{max}} Mbps.",
+                "heavyGameMode": "Modo jogo pesado",
+                "heavyGameModeDescription": "Codifica a live na CPU/RAM em vez da placa de vídeo. Ideal quando o jogo já usa quase 100% da GPU. Prefira compartilhar só a janela do jogo.",
                 "changeTitle": "Trocar tela da live"
             },
             "liveControls": {

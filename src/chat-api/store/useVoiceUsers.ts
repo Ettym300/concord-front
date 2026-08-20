@@ -22,6 +22,11 @@ import { arrayEquals } from "@/common/arrayEquals";
 import { LazySimplePeer } from "@/components/LazySimplePeer";
 import { log } from "@/common/logger";
 import { wrapMicWithNoiseSuppression, preloadNoiseSuppressor, getMicGainLinear } from "@/common/noiseSuppressor";
+import {
+  applyCpuPreferredVideoEncodingToPeer,
+  getEffectiveLiveBitrateKbps,
+  prepareOutgoingVideoTrack
+} from "@/common/liveStreamEncoding";
 
 const FALLBACK_ICE_SERVERS: RTCIceServer[] = [
   {
@@ -425,7 +430,7 @@ const createPeer = (voiceUser: VoiceUser, signal?: SimplePeer.SignalData) => {
     log("RTC", "Connected to", voiceUser.user().username + "!");
     updateConnectionStatus(voiceUser, "CONNECTED");
     window.setTimeout(() => {
-      void applyOutgoingVideoBitrate(voiceUser);
+      void applyOutgoingLiveEncoding(voiceUser);
     }, 400);
   });
   peer.on("end", () => {
@@ -923,9 +928,12 @@ const setVideoStream = (stream: MediaStream | null) => {
 
   if (!stream) return;
 
+  const videoTrack = stream.getVideoTracks()[0];
+  prepareOutgoingVideoTrack(videoTrack);
+
   addStreamToPeers(stream);
 
-  const videoTrack = stream.getVideoTracks()[0]!;
+  if (!videoTrack) return;
 
   videoTrack.onended = () => {
     removeStream(stream);
@@ -933,7 +941,7 @@ const setVideoStream = (stream: MediaStream | null) => {
     videoTrack.onended = null;
   };
   window.setTimeout(() => {
-    void applyOutgoingVideoBitrate();
+    void applyOutgoingLiveEncoding();
   }, 400);
 };
 
@@ -950,7 +958,7 @@ export function getLiveBitrateKbps() {
 const applyOutgoingVideoBitrate = async (voiceUser?: VoiceUser) => {
   const current = currentVoiceUser();
   if (!current?.videoStream) return;
-  const maxBitrate = getLiveBitrateKbps() * 1000;
+  const maxBitrate = getEffectiveLiveBitrateKbps() * 1000;
   const targets = voiceUser
     ? [voiceUser]
     : getVoiceUsersByChannelId(current.channelId);
@@ -977,10 +985,23 @@ const applyOutgoingVideoBitrate = async (voiceUser?: VoiceUser) => {
   }
 };
 
+const applyOutgoingLiveEncoding = async (voiceUser?: VoiceUser) => {
+  const current = currentVoiceUser();
+  if (!current?.videoStream) return;
+  const targets = voiceUser
+    ? [voiceUser]
+    : getVoiceUsersByChannelId(current.channelId);
+
+  for (const user of targets) {
+    applyCpuPreferredVideoEncodingToPeer(user.peer);
+  }
+  await applyOutgoingVideoBitrate(voiceUser);
+};
+
 const setLiveBitrate = (kbps: number) => {
   const clamped = Math.max(250, Math.min(8000, Math.round(kbps)));
   setStorageObject(StorageKeys.voiceLiveBitrate, clamped);
-  void applyOutgoingVideoBitrate();
+  void applyOutgoingLiveEncoding();
 };
 
 const removeStream = (stream: MediaStream) => {
@@ -1094,6 +1115,7 @@ export default function useVoiceUsers() {
     setVideoStream,
     setLiveBitrate,
     getLiveBitrateKbps,
+    applyOutgoingLiveEncoding,
     resetAll,
 
     isLocalMicMuted: () => !currentVoiceUser()?.audioStream,

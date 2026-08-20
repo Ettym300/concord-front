@@ -175,6 +175,7 @@ export const VirtualList = (props: VirtualListProps) => {
                 transform: `translate3d(0, ${offset() ?? 0}px, 0)`,
                 width: "100%",
                 height: `${item()?.height ?? 0}px`,
+                overflow: "hidden",
                 "will-change": "transform"
               }}
             >

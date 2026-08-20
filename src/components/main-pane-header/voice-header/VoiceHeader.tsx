@@ -23,7 +23,7 @@ import { CustomLink } from "@/components/ui/CustomLink";
 import MemberContextMenu from "@/components/member-context-menu/MemberContextMenu";
 import RouterEndpoints from "@/common/RouterEndpoints";
 import { useMatch, useNavigate, useParams } from "solid-navigator";
-import { VoiceUser } from "@/chat-api/store/useVoiceUsers";
+import { VoiceUser, cachedVolumes, setCachedVolumes } from "@/chat-api/store/useVoiceUsers";
 import { t } from "@nerimity/i18lite";
 
 const [showParticipants, setShowParticipants] = createSignal(true);
@@ -58,9 +58,9 @@ export function VoiceHeader(props: { channelId?: string; floating?: boolean }) {
     return !voiceUsers.isLiveWatched(user.userId);
   };
   const visibleStageUsers = () =>
-    channelVoiceUsers().filter((user) => !isHiddenLive(user));
+    videoStreamingUsers().filter((user) => !isHiddenLive(user));
   const hiddenLiveUsers = () =>
-    channelVoiceUsers().filter((user) => isHiddenLive(user));
+    videoStreamingUsers().filter((user) => isHiddenLive(user));
 
   createEffect(
     on(videoStreamingUsers, (now, prev) => {
@@ -70,9 +70,9 @@ export function VoiceHeader(props: { channelId?: string; floating?: boolean }) {
       }
       if (
         selectedUserId() &&
-        channelVoiceUsers().every((user) => user.userId !== selectedUserId())
+        videoStreamingUsers().every((user) => user.userId !== selectedUserId())
       ) {
-        setSelectedUserId(now[0]?.userId ?? channelVoiceUsers()[0]?.userId ?? null);
+        setSelectedUserId(now[0]?.userId ?? null);
       }
     })
   );
@@ -327,7 +327,10 @@ function VoiceTile(props: {
           mediaStream={stream()!}
           mute={isSelf()}
           username={user()?.username}
+          userId={props.voiceUser.userId}
           compact
+          filmstrip={props.filmstrip}
+          large={props.large}
         />
       </Show>
       <Show when={!showVideo()}>
@@ -368,14 +371,59 @@ function VideoStream(props: {
   mediaStream: MediaStream;
   mute?: boolean;
   username?: string;
+  userId?: string;
   compact?: boolean;
+  filmstrip?: boolean;
+  large?: boolean;
 }) {
   let videoEl: HTMLVideoElement | undefined;
+  const { voiceUsers } = useStore();
 
-  const [muted, setMuted] = createSignal(false);
   const [playing, setPlaying] = createSignal(false);
 
-  const desiredMute = () => props.mute || muted() || !playing();
+  const voiceUser = () => {
+    const channelId = voiceUsers.currentUser()?.channelId;
+    if (!channelId || !props.userId) return undefined;
+    return voiceUsers.getVoiceUser(channelId, props.userId);
+  };
+
+  const volume = () =>
+    props.userId ? (cachedVolumes[props.userId] ?? 1) : 1;
+  const isVolumeMuted = () => volume() === 0;
+  const showVolumeControls = () => !props.mute && !!props.userId;
+  const showFullscreen = () => !props.filmstrip;
+
+  const applyVolume = (next: number) => {
+    const clamped = Math.max(0, Math.min(1, next));
+    if (!props.userId) return;
+    setCachedVolumes(props.userId, clamped);
+    const audio = voiceUser()?.audio;
+    if (audio) audio.volume = clamped;
+    if (videoEl) videoEl.volume = clamped;
+  };
+
+  const toggleVolumeMute = () => {
+    applyVolume(isVolumeMuted() ? 1 : 0);
+  };
+
+  createEffect(() => {
+    const userId = props.userId;
+    if (!userId) return;
+    const vol = cachedVolumes[userId] ?? 1;
+    const audio = voiceUser()?.audio;
+    if (audio && audio.volume !== vol) audio.volume = vol;
+    if (videoEl && videoEl.volume !== vol) videoEl.volume = vol;
+  });
+
+  createEffect(
+    on(
+      () => voiceUser()?.audio,
+      (audio) => {
+        if (!audio || !props.userId) return;
+        audio.volume = cachedVolumes[props.userId] ?? 1;
+      }
+    )
+  );
 
   const tryPlay = () => {
     const el = videoEl;
@@ -387,10 +435,17 @@ function VideoStream(props: {
       .play()
       .then(() => {
         setPlaying(true);
-        el.muted = desiredMute();
+        el.muted = props.mute || false;
+        el.volume = volume();
       })
       .catch(() => {});
   };
+
+  createEffect(() => {
+    const el = videoEl;
+    if (!el || !playing()) return;
+    el.muted = !!props.mute;
+  });
 
   const attachStream = (el?: HTMLVideoElement) => {
     if (!el) return;
@@ -423,12 +478,6 @@ function VideoStream(props: {
     });
   });
 
-  createEffect(() => {
-    const el = videoEl;
-    if (!el || !playing()) return;
-    el.muted = desiredMute();
-  });
-
   onMount(() => {
     const unlock = () => tryPlay();
     document.addEventListener("pointerdown", unlock);
@@ -439,7 +488,8 @@ function VideoStream(props: {
       if (!el) return;
       if (!el.paused && el.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
         setPlaying(true);
-        el.muted = desiredMute();
+        el.muted = !!props.mute;
+        el.volume = volume();
         window.clearInterval(interval);
         return;
       }
@@ -460,7 +510,8 @@ function VideoStream(props: {
     <div
       class={cn(
         style.videoContainer,
-        conditionalClass(props.compact, style.compact)
+        conditionalClass(props.compact, style.compact),
+        conditionalClass(props.filmstrip, style.compactFilmstrip)
       )}
     >
       <video
@@ -472,46 +523,53 @@ function VideoStream(props: {
       <Show when={props.username}>
         <div class={style.videoName}>{props.username}</div>
       </Show>
-      <div class={style.videoOverlay}>
-        <Show when={!props.mute}>
-          <div class={style.volumeSlider}>
+      <Show when={showVolumeControls() || showFullscreen()}>
+        <div
+          class={cn(
+            style.videoControls,
+            conditionalClass(props.filmstrip, style.videoControlsFilmstrip)
+          )}
+          onPointerDown={(event) => event.stopPropagation()}
+          onClick={(event) => event.stopPropagation()}
+        >
+          <Show when={showVolumeControls()}>
+            <div class={style.volumeSlider}>
+              <Button
+                iconName={isVolumeMuted() ? "volume_off" : "volume_up"}
+                iconSize={props.filmstrip ? 14 : 18}
+                padding={props.filmstrip ? 4 : 6}
+                color={
+                  isVolumeMuted() ? "var(--alert-color)" : "var(--primary-color)"
+                }
+                margin={0}
+                onClick={() => toggleVolumeMute()}
+              />
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.01}
+                value={volume()}
+                onInput={(event) => {
+                  applyVolume(Number(event.currentTarget.value));
+                }}
+              />
+            </div>
+          </Show>
+          <Show when={showFullscreen()}>
             <Button
-              iconName={muted() ? "volume_off" : "volume_up"}
-              iconSize={18}
-              padding={6}
-              color={muted() ? "var(--alert-color)" : "var(--primary-color)"}
+              iconName="fullscreen"
+              iconSize={props.filmstrip ? 14 : 18}
+              title={t("mainPaneHeader.voice.fullscreen")}
+              padding={props.filmstrip ? 4 : 6}
               margin={0}
-              onClick={(event) => {
-                event.stopPropagation();
-                setMuted(!muted());
+              onClick={() => {
+                videoEl?.requestFullscreen({ navigationUI: "hide" });
               }}
             />
-            <input
-              type="range"
-              min={0}
-              value={muted() ? 0 : videoEl!.volume}
-              max={1}
-              step={0.01}
-              onClick={(event) => event.stopPropagation()}
-              onInput={(e) => {
-                videoEl!.volume = parseFloat(e.target.value);
-                setMuted(false);
-              }}
-            />
-          </div>
-        </Show>
-        <Button
-          iconName="fullscreen"
-          iconSize={18}
-          title={t("mainPaneHeader.voice.fullscreen")}
-          padding={6}
-          margin={0}
-          onClick={(event) => {
-            event.stopPropagation();
-            videoEl?.requestFullscreen({ navigationUI: "hide" });
-          }}
-        />
-      </div>
+          </Show>
+        </div>
+      </Show>
     </div>
   );
 }

@@ -17,6 +17,10 @@ import Checkbox from "../ui/Checkbox";
 import { t } from "@nerimity/i18lite";
 import { StorageKeys, useLocalStorage } from "@/common/localStorage";
 import Input from "../ui/input/Input";
+import {
+  HEAVY_GAME_MAX_BITRATE_KBPS,
+  isHeavyGameModeEnabled
+} from "@/common/liveStreamEncoding";
 
 const QualityOptions = ["480p", "720p", "1080p"] as const;
 const FramerateOptions = ["1fps 💀", "10fps", "30fps", "60fps"] as const;
@@ -40,6 +44,7 @@ export function LiveBitratePicker() {
     2500
   );
   const [draft, setDraft] = createSignal(formatMbps(bitrate()));
+  const heavyGame = () => isHeavyGameModeEnabled();
 
   const applyKbps = (kbps: number) => {
     setBitrate(kbps);
@@ -84,9 +89,49 @@ export function LiveBitratePicker() {
           onChange={() => applyDraft()}
         />
         <BitrateHint>
-          {t("mainPaneHeader.voice.screenShareModal.bitrateHint")}
+          {heavyGame()
+            ? t("mainPaneHeader.voice.screenShareModal.bitrateHeavyGameHint", {
+                max: HEAVY_GAME_MAX_BITRATE_KBPS / 1000
+              })
+            : t("mainPaneHeader.voice.screenShareModal.bitrateHint")}
         </BitrateHint>
       </BitrateInputRow>
+    </>
+  );
+}
+
+export function HeavyGameModePicker(props?: { onChange?: (enabled: boolean) => void }) {
+  const { voiceUsers } = useStore();
+  const [heavyGame, setHeavyGame] = useLocalStorage(
+    StorageKeys.voiceLiveHeavyGameMode,
+    false
+  );
+
+  const onToggle = (enabled: boolean) => {
+    setHeavyGame(enabled);
+    props?.onChange?.(enabled);
+    if (voiceUsers.currentUser()?.videoStream) {
+      void voiceUsers.applyOutgoingLiveEncoding();
+    }
+  };
+
+  return (
+    <>
+      <Checkbox
+        label={t("mainPaneHeader.voice.screenShareModal.heavyGameMode")}
+        checked={heavyGame()}
+        onChange={onToggle}
+        class={css`
+          margin: 10px 6px 0;
+        `}
+      />
+      <BitrateHint
+        class={css`
+          margin: 4px 6px 8px;
+        `}
+      >
+        {t("mainPaneHeader.voice.screenShareModal.heavyGameModeDescription")}
+      </BitrateHint>
     </>
   );
 }
@@ -160,6 +205,19 @@ export function ScreenShareModal(props: { close: () => void }) {
   const [preventEcho, setPreventEcho] = createSignal(true);
 
   const [electronSourceId, setElectronSourceId] = createSignal<string>();
+
+  onMount(() => {
+    if (isHeavyGameModeEnabled()) {
+      setSelectedQuality("720p");
+      setFramerate("30fps");
+    }
+  });
+
+  const onHeavyGameChange = (enabled: boolean) => {
+    if (!enabled) return;
+    setSelectedQuality("720p");
+    setFramerate("30fps");
+  };
 
   const chooseWindowClick = async () => {
     const constraints = await constructConstraints(
@@ -267,6 +325,7 @@ export function ScreenShareModal(props: { close: () => void }) {
         </For>
       </OptionContainer>
       <LiveBitratePicker />
+      <HeavyGameModePicker onChange={onHeavyGameChange} />
       <Show when={electronWindowAPI()?.isElectron && electronSourceId()}>
         <Checkbox
           label={

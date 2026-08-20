@@ -1168,6 +1168,9 @@
         "chooseWindowButton": "Choose Window",
         "bitrate": "Bitrate",
         "bitrateHint": "Type a value in Mbps (0.25 to 8).",
+        "bitrateHeavyGameHint": "Heavy game mode caps live at {{max}} Mbps.",
+        "heavyGameMode": "Heavy game mode",
+        "heavyGameModeDescription": "Encodes live on CPU/RAM instead of the GPU. Best when the game already uses most of your graphics card. Prefer sharing the game window only.",
         "changeTitle": "Change Live Screen"
       },
       "liveControls": {

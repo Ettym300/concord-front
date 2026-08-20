@@ -138,7 +138,7 @@ const MemberItem = (props: {
 
   return (
     <div
-      style={props.style}
+      style={{ ...props.style, height: "100%" }}
       onMouseEnter={() => {
         userDetailsPreloader.preload(user().id);
         setHovering(true);
@@ -643,7 +643,7 @@ function RoleItem(props: {
   const [hovered, setHovered] = createSignal(false);
 
   const memberListHeight = (member: ServerMember) =>
-    users.get(member.userId)?.banner ? 48 : 42;
+    users.get(member.userId)?.banner ? 52 : 42;
 
   const virtualListItems = createMemo(() =>
     props.members.map((m) => ({

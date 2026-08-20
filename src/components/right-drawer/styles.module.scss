@@ -199,11 +199,10 @@
   }
 
   .memberItem:not(.memberItemWithBanner) {
-    height: 37px;
+    height: 100%;
   }
   .memberItemWithBanner {
-    height: auto;
-    min-height: 44px;
+    height: 100%;
   }
   .memberItem:empty {
     display: none;
@@ -277,7 +276,10 @@
 .memberItem {
   position: relative;
   display: flex;
+  overflow: hidden;
+  box-sizing: border-box;
   align-items: center;
+  height: 100%;
   padding: 6px 8px;
   padding-left: 8px;
   border-radius: 10px;
@@ -333,7 +335,7 @@
 .memberItemWithBanner {
   overflow: hidden;
   padding: 5px 8px;
-  margin-bottom: 2px;
+  margin-bottom: 0;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background-color: transparent;
 
