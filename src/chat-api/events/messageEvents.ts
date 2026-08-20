@@ -15,6 +15,7 @@ import { hasBit, ROLE_PERMISSIONS } from "../Bitwise";
 import useFriends from "../store/useFriends";
 import { pushMessageNotification } from "@/components/in-app-notification-previews/useInAppNotificationPreviews";
 import useServers from "../store/useServers";
+import { isHiddenHistoryMessage } from "@/common/SystemMessage";
 
 export function onMessageCreated(payload: {
   socketId: string;
@@ -83,11 +84,14 @@ export function onMessageCreated(payload: {
   const selfMember = members.get(channel?.serverId!, accountUser?.id!);
 
   const isSystemMessage = payload.message.type !== MessageType.CONTENT;
+  const hideFromHistory = isHiddenHistoryMessage(payload.message.type);
   const isSelf =
     !isSystemMessage && accountUser?.id === payload.message.createdBy.id;
 
   batch(() => {
-    channel?.updateLastMessaged(payload.message.createdAt);
+    if (!hideFromHistory) {
+      channel?.updateLastMessaged(payload.message.createdAt);
+    }
 
     if (!isSystemMessage && isSelf) {
       channel?.updateLastSeen(payload.message.createdAt + 1);
@@ -155,7 +159,7 @@ export function onMessageCreated(payload: {
   // only play notifications if:
   //   it does not have focus (has focus)
   //   channel is not selected (is selected)
-  if (!isSelf) {
+  if (!isSelf && !hideFromHistory) {
     if (hasBlockedRecipient) return;
     const isChannelSelected =
       header.details().id === "MessagePane" &&

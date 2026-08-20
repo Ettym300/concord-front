@@ -2,6 +2,15 @@ import { MessageType } from "@/chat-api/RawData";
 
 const tn = (v: string) => v;
 
+const HIDDEN_HISTORY_MESSAGE_TYPES = new Set([
+  MessageType.CALL_STARTED,
+  MessageType.JOIN_SERVER,
+  MessageType.LEAVE_SERVER
+]);
+
+export const isHiddenHistoryMessage = (messageType: MessageType) =>
+  HIDDEN_HISTORY_MESSAGE_TYPES.has(messageType);
+
 export const getSystemMessage = (messageType: MessageType, isBot = false) => {
   switch (messageType) {
     case MessageType.CONTENT:

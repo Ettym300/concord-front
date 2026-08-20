@@ -12,6 +12,7 @@ import {
 import { playMessageNotification } from "@/common/Sound";
 import { createDesktopNotification } from "@/common/desktopNotification";
 import env from "@/common/env";
+import { isHiddenHistoryMessage } from "@/common/SystemMessage";
 import {
   useMutationObserver,
   useResizeObserver
@@ -75,7 +76,9 @@ export const MessageLogArea = (props: {
   const { channels, messages, account, channelProperties, servers } =
     useStore();
   const channelMessages = createMemo(() =>
-    messages.getMessagesByChannelId(params.channelId!)
+    messages
+      .getMessagesByChannelId(params.channelId!)
+      ?.filter((m) => !isHiddenHistoryMessage(m.type))
   );
   const [unreadMarker, setUnreadMarker] = createStore<{
     lastSeenAt: number | null;
