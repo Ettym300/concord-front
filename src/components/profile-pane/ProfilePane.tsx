@@ -53,7 +53,6 @@ import { Markup } from "../Markup";
 import { t } from "@nerimity/i18lite";
 import {
   hasBit,
-  isPaidUserBadge,
   USER_BADGES,
   USER_BADGES_VALUES,
   UserBadge
@@ -1457,7 +1456,7 @@ const Separator = styled("div")`
   border-radius: 2px;
 `;
 function Badges(props: { user: UserDetails }) {
-  const allBadges = USER_BADGES_VALUES.filter((badge) => !isPaidUserBadge(badge));
+  const allBadges = USER_BADGES_VALUES;
 
   const isBot = () => props.user.user.bot;
 

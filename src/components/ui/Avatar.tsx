@@ -11,14 +11,21 @@ import {
 } from "solid-js";
 import {
   hasBit,
-  isPaidUserBadge,
   USER_BADGES,
   USER_BADGES_VALUES,
   UserBadge
 } from "@/chat-api/Bitwise";
 import style from "./Avatar.module.css";
+import { CatEarsBorder } from "../avatar-borders/CatEarBorder";
+import { FoxEarsBorder } from "../avatar-borders/FoxEarBorder";
 import env from "@/common/env";
+import { BunnyEarsBorder } from "../avatar-borders/BunnyEarBorder";
+import { DogEarsBorder } from "../avatar-borders/DogEarBorder";
 import { FounderAdminSupporterBorder } from "../avatar-borders/FounderAdminSupporterBorder";
+import { DogTailBorder } from "../avatar-borders/DogTailBorder";
+import { WolfEarsBorder } from "../avatar-borders/WolfEarBorder";
+import { GoatEarsBorder } from "../avatar-borders/GoatEarBorder";
+import { DeerEarsBorder } from "../avatar-borders/DeerEarBorder";
 import { generateUrl } from "@/common/image";
 
 interface Props {
@@ -127,9 +134,7 @@ export default function Avatar(props: Props) {
   const badge = createMemo(() => {
     const badges = serverOrUser()?.badges;
     if (!badges) return;
-    return badgesArr.find(
-      (b) => !b.overlay && !isPaidUserBadge(b) && hasBit(badges, b.bit)
-    );
+    return badgesArr.find((b) => !b.overlay && hasBit(badges, b.bit));
   });
 
   return (
@@ -214,6 +219,30 @@ function AvatarBorder(props: {
           />
         </Match>
 
+        <Match when={props.badge?.bit === USER_BADGES.EMO_SUPPORTER.bit}>
+          <UniversalBorder
+            type="emo-supporter"
+            size={props.size}
+            avatarUrl={props.url}
+            hovered={props.hovered}
+            color={props.color}
+            badges={props.badges}
+            children={props.children}
+            serverOrUser={props.serverOrUser}
+          />
+        </Match>
+        <Match when={props.badge?.bit === USER_BADGES.SUPPORTER.bit}>
+          <UniversalBorder
+            type="supporter"
+            size={props.size}
+            avatarUrl={props.url}
+            hovered={props.hovered}
+            color={props.color}
+            badges={props.badges}
+            children={props.children}
+            serverOrUser={props.serverOrUser}
+          />
+        </Match>
         <Match when={props.badge?.bit === USER_BADGES.ADMIN.bit}>
           <UniversalBorder
             type="admin"
@@ -429,11 +458,139 @@ function UniversalBorder(props: UniversalBorderProps) {
   );
 }
 
-function Overlays(_props: {
+function Overlays(props: {
   badges?: number;
   offset?: number;
   hasBorder?: boolean;
   size: number;
 }) {
-  return null;
+  return (
+    <Show when={props.badges}>
+      <Switch>
+        <Match when={hasBit(props.badges!, USER_BADGES.DEER_EARS_WHITE.bit)}>
+          <DeerEarsBorder
+            size={props.size}
+            offset={(props.offset || 0) - 0.5}
+            color="white"
+            scale={1.1}
+          />
+        </Match>
+        <Match
+          when={hasBit(props.badges!, USER_BADGES.DEER_EARS_HORNS_DARK.bit)}
+        >
+          <DeerEarsBorder
+            size={props.size}
+            offset={(props.offset || 0) - 0.5}
+            color="horns-dark"
+            scale={1.1}
+          />
+        </Match>
+        <Match when={hasBit(props.badges!, USER_BADGES.DEER_EARS_HORNS.bit)}>
+          <DeerEarsBorder
+            size={props.size}
+            offset={(props.offset || 0) - 0.5}
+            color="horns"
+            scale={1.1}
+          />
+        </Match>
+        <Match when={hasBit(props.badges!, USER_BADGES.GOAT_HORNS.bit)}>
+          <GoatEarsBorder
+            size={props.size}
+            offset={(props.offset || 0) + 0.1}
+            color="horns"
+            scale={1.4}
+          />
+        </Match>
+        <Match when={hasBit(props.badges!, USER_BADGES.GOAT_EARS_WHITE.bit)}>
+          <GoatEarsBorder
+            size={props.size}
+            offset={(props.offset || 0) + 0.1}
+            color="ears-white"
+            scale={1.4}
+          />
+        </Match>
+        <Match when={hasBit(props.badges!, USER_BADGES.WOLF_EARS.bit)}>
+          <WolfEarsBorder
+            size={props.size}
+            offset={(props.offset || 0) - 0.2}
+          />
+        </Match>
+        <Match when={hasBit(props.badges!, USER_BADGES.DOG_SHIBA.bit)}>
+          <DogEarsBorder
+            size={props.size}
+            scale={1.2}
+            offset={(props.offset || 0) - 0.03}
+            color="shiba"
+          />
+          <DogTailBorder
+            offset={(props.offset || 0) + (props.hasBorder ? 1 : 0.27)}
+            size={props.size}
+            color="shiba"
+            offsetLeft={props.hasBorder ? -1.4 : -0.72}
+          />
+        </Match>
+        <Match when={hasBit(props.badges!, USER_BADGES.DOG_EARS_BROWN.bit)}>
+          <DogEarsBorder
+            size={props.size}
+            offset={(props.offset || 0) + (props.hasBorder ? 0.4 : 0.1)}
+            color="brown"
+          />
+        </Match>
+        <Match when={hasBit(props.badges!, USER_BADGES.BUNNY_EARS_MAID.bit)}>
+          <BunnyEarsBorder
+            size={props.size}
+            offset={(props.offset || 0) - 0.4}
+            color="maid"
+          />
+        </Match>
+        <Match when={hasBit(props.badges!, USER_BADGES.BUNNY_EARS_BLACK.bit)}>
+          <BunnyEarsBorder
+            size={props.size}
+            offset={(props.offset || 0) - 0.5}
+            color="black"
+          />
+        </Match>
+        <Match when={hasBit(props.badges!, USER_BADGES.FOX_EARS_BROWN.bit)}>
+          <FoxEarsBorder
+            size={props.size}
+            offset={(props.offset || 0) - 0.2}
+            color="brown"
+          />
+        </Match>
+
+        <Match when={hasBit(props.badges!, USER_BADGES.FOX_EARS_GOLD.bit)}>
+          <FoxEarsBorder
+            size={props.size}
+            offset={(props.offset || 0) - 0.2}
+            color="gold"
+          />
+        </Match>
+
+        <Match when={hasBit(props.badges!, USER_BADGES.CAT_EARS_MAID.bit)}>
+          <CatEarsBorder
+            size={props.size}
+            offset={(props.offset || 0) + (props.hasBorder ? -0.1 : -0.1)}
+            color="maid"
+          />
+        </Match>
+        <Match when={hasBit(props.badges!, USER_BADGES.CAT_EARS_PURPLE.bit)}>
+          <CatEarsBorder
+            size={props.size}
+            offset={props.offset}
+            color="purple"
+          />
+        </Match>
+        <Match when={hasBit(props.badges!, USER_BADGES.CAT_EARS_BLUE.bit)}>
+          <CatEarsBorder size={props.size} offset={props.offset} color="blue" />
+        </Match>
+        <Match when={hasBit(props.badges!, USER_BADGES.CAT_EARS_WHITE.bit)}>
+          <CatEarsBorder
+            size={props.size}
+            offset={props.offset}
+            color="white"
+          />
+        </Match>
+      </Switch>
+    </Show>
+  );
 }

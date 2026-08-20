@@ -1,5 +1,5 @@
-import { createEffect, createSignal, For, onMount } from "solid-js";
-import { styled } from "solid-styled-components";
+import { createEffect, createSignal, For, onMount, Show } from "solid-js";
+import { css, styled } from "solid-styled-components";
 
 import useStore from "@/chat-api/store/useStore";
 
@@ -8,14 +8,18 @@ import { t } from "@nerimity/i18lite";
 
 import {
   hasBit,
-  isPaidUserBadge,
-  USER_BADGES_VALUES
+  USER_BADGES,
+  USER_BADGES_VALUES,
+  UserBadge
 } from "@/chat-api/Bitwise";
 
 import SettingsBlock, {
   SettingsGroup
 } from "../ui/settings-block/SettingsBlock";
+import { SelfUser } from "@/chat-api/events/connectionEventTypes";
 import Avatar from "../ui/Avatar";
+import Icon from "../ui/icon/Icon";
+import Block from "../ui/settings-block/Block";
 import { RawInventoryItem } from "@/chat-api/RawData";
 import { fetchInventory, toggleBadge } from "@/chat-api/services/UserService";
 import { formatters } from "@/common/date";
@@ -29,6 +33,27 @@ const Container = styled("div")`
   padding: 10px;
   flex-shrink: 0;
 `;
+
+const COSMETIC_BADGES = [
+  USER_BADGES.SUPPORTER,
+  USER_BADGES.EMO_SUPPORTER,
+  USER_BADGES.DEER_EARS_WHITE,
+  USER_BADGES.DEER_EARS_HORNS_DARK,
+  USER_BADGES.DEER_EARS_HORNS,
+  USER_BADGES.GOAT_HORNS,
+  USER_BADGES.GOAT_EARS_WHITE,
+  USER_BADGES.WOLF_EARS,
+  USER_BADGES.DOG_SHIBA,
+  USER_BADGES.DOG_EARS_BROWN,
+  USER_BADGES.BUNNY_EARS_MAID,
+  USER_BADGES.BUNNY_EARS_BLACK,
+  USER_BADGES.CAT_EARS_PURPLE,
+  USER_BADGES.CAT_EARS_BLUE,
+  USER_BADGES.CAT_EARS_WHITE,
+  USER_BADGES.CAT_EARS_MAID,
+  USER_BADGES.FOX_EARS_GOLD,
+  USER_BADGES.FOX_EARS_BROWN
+];
 
 export default function BadgeSettings() {
   const { header } = useStore();
@@ -48,9 +73,137 @@ export default function BadgeSettings() {
       </Breadcrumb>
 
       <OwnedBadges />
+      <BadgesCatalog />
     </Container>
   );
 }
+
+const BadgesCatalog = () => {
+  const store = useStore();
+  const user = () => store.account.user();
+
+  const handleBadgeToggle = (badge: UserBadge) => {
+    if (badge.removable === false) {
+      return toast(
+        t("settings.badges.unremovableError.title"),
+        t("settings.badges.unremovableError.body"),
+        "error"
+      );
+    }
+    toggleBadge(badge.bit).then((result) => {
+      store.account.setUser({ badges: result.badges });
+    });
+  };
+
+  return (
+    <Show when={user()}>
+      <SettingsGroup>
+        <SettingsBlock label={t("settings.drawer.badges")} icon="pets" />
+        <Block
+          class={css`
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(164px, 1fr));
+            gap: 6px;
+            justify-items: center;
+            padding: 6px;
+          `}
+        >
+          <For each={COSMETIC_BADGES}>
+            {(badge) => (
+              <BadgeItem
+                user={user()!}
+                badge={badge}
+                enabled={hasBit(user()?.badges || 0, badge.bit)}
+                onClick={() => handleBadgeToggle(badge)}
+              />
+            )}
+          </For>
+        </Block>
+      </SettingsGroup>
+    </Show>
+  );
+};
+
+const badgeItemStyle = css`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-bottom: 20px;
+  padding-top: 20px;
+  gap: 8px;
+  position: relative;
+  box-sizing: border-box;
+  z-index: 1;
+  cursor: pointer;
+  &:before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--background-color);
+    opacity: 0.2;
+    z-index: -1;
+    border-radius: 8px;
+    pointer-events: none;
+  }
+  &[data-enabled="true"]:before {
+    opacity: 0.45;
+    outline: 1px solid var(--primary-color);
+    outline-offset: -1px;
+  }
+  .badge-desc {
+    font-size: 12px;
+    opacity: 0.6;
+    text-align: center;
+  }
+`;
+const BadgeItem = (props: {
+  user: SelfUser;
+  badge: UserBadge;
+  enabled: boolean;
+  onClick: () => void;
+}) => {
+  const [hovered, setHovered] = createSignal(false);
+  return (
+    <div
+      class={badgeItemStyle}
+      data-enabled={props.enabled}
+      onClick={props.onClick}
+      onMouseOver={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <Avatar
+        user={{ ...props.user, badges: props.badge.bit }}
+        size={52}
+        animate={hovered()}
+      />
+      <div
+        style={{
+          "border-radius": "4px",
+          padding: "3px",
+          "font-weight": "bold",
+          "font-size": "12px",
+          background: props.badge.color,
+          color: props.badge.textColor || "rgba(0, 0, 0, 0.7)"
+        }}
+        class="badge-name"
+      >
+        <Show when={props.badge.icon}>
+          <Icon
+            name={props.badge.icon!}
+            size={14}
+            color={props.badge.textColor || "rgba(0, 0, 0, 0.7)"}
+            style={{ "margin-right": "4px", "vertical-align": "middle" }}
+          />
+        </Show>
+        {props.badge.name()}
+      </div>
+      <div class="badge-desc">{props.badge.description?.()}</div>
+    </div>
+  );
+};
 
 const OwnedBadges = () => {
   const store = useStore();
@@ -63,13 +216,13 @@ const OwnedBadges = () => {
   });
 
   const ownedBadges = () => {
-    return inventory()
+    const badges = inventory()
       .filter((item) => item.itemType === "badge")
       .map((item) => {
         const badge = USER_BADGES_VALUES.find(
           (entry) => entry.bit === parseInt(item.itemId)
         );
-        if (!badge || isPaidUserBadge(badge)) return null;
+        if (!badge) return null;
         return {
           ...badge,
           acquiredAt: item.acquiredAt,
@@ -77,6 +230,18 @@ const OwnedBadges = () => {
         };
       })
       .filter((item) => item !== null);
+
+    const hasPalestine = badges.find(
+      (badge) => badge.bit === USER_BADGES.PALESTINE.bit
+    );
+    if (!hasPalestine) {
+      badges.unshift({
+        ...USER_BADGES.PALESTINE,
+        acquiredAt: 0,
+        enabled: hasBit(user()?.badges || 0, USER_BADGES.PALESTINE.bit)
+      });
+    }
+    return badges;
   };
 
   const handleBadgeToggle = (badge: { bit: number; removable?: boolean }) => {

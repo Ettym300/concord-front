@@ -312,11 +312,6 @@ export const USER_BADGES = {
 
 export const USER_BADGES_VALUES = Object.values(USER_BADGES) as UserBadge[];
 
-export const isPaidUserBadge = (badge: Pick<UserBadge, "bit" | "overlay">) =>
-  Boolean(badge.overlay) ||
-  badge.bit === USER_BADGE_BITS.SUPPORTER ||
-  badge.bit === USER_BADGE_BITS.EMO_SUPPORTER;
-
 export const CHANNEL_PERMISSIONS = {
   PUBLIC_CHANNEL: {
     name: () => t("servers.channelPermissions.publicChannel"),
