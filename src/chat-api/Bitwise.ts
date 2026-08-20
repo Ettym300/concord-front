@@ -37,7 +37,8 @@ const USER_BADGE_BITS = {
   DEER_EARS_HORNS_DARK: 1048576,
   CAT_EARS_MAID: 2097152,
   CAT_EARS_PURPLE: 4194304,
-  DEER_EARS_WHITE: 8388608
+  DEER_EARS_WHITE: 8388608,
+  GOKU_HAIR: 16777216
 } as const;
 
 export interface UserBadge {
@@ -55,6 +56,15 @@ export interface UserBadge {
 
 export const USER_BADGES = {
   // overlays
+  GOKU_HAIR: {
+    name: () => t("badges.goku.name"),
+    bit: USER_BADGE_BITS.GOKU_HAIR,
+    color: "linear-gradient(90deg, #585858 0%, #111111 100%)",
+    textColor: "#ffffff",
+    overlay: true,
+    description: () => t("badges.goku.description"),
+    icon: "face"
+  },
   DEER_EARS_WHITE: {
     name: () => t("badges.deer.name"),
     bit: USER_BADGE_BITS.DEER_EARS_WHITE,

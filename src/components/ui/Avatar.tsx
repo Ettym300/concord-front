@@ -24,6 +24,7 @@ import { DogEarsBorder } from "../avatar-borders/DogEarBorder";
 import { FounderAdminSupporterBorder } from "../avatar-borders/FounderAdminSupporterBorder";
 import { DogTailBorder } from "../avatar-borders/DogTailBorder";
 import { WolfEarsBorder } from "../avatar-borders/WolfEarBorder";
+import { GokuHairBorder } from "../avatar-borders/GokuHairBorder";
 import { GoatEarsBorder } from "../avatar-borders/GoatEarBorder";
 import { DeerEarsBorder } from "../avatar-borders/DeerEarBorder";
 import { generateUrl } from "@/common/image";
@@ -467,6 +468,12 @@ function Overlays(props: {
   return (
     <Show when={props.badges}>
       <Switch>
+        <Match when={hasBit(props.badges!, USER_BADGES.GOKU_HAIR.bit)}>
+          <GokuHairBorder
+            size={props.size}
+            offset={(props.offset || 0) - 0.15}
+          />
+        </Match>
         <Match when={hasBit(props.badges!, USER_BADGES.DEER_EARS_WHITE.bit)}>
           <DeerEarsBorder
             size={props.size}

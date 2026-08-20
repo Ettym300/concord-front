@@ -1194,6 +1194,10 @@
             "deerDescription": "Chifres de veado fofos",
             "deerDarkDescription": "Chifres de veado emo",
             "deerWhiteDescription": "Veado rosa fofo"
+        },
+        "goku": {
+            "name": "Goku",
+            "description": "Cabelo Super Saiyajin"
         }
     },
     "connectionErrorModal": {

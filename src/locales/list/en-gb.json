@@ -1440,6 +1440,10 @@
       "deerDescription": "Cute Deer Antlers",
       "deerDarkDescription": "Emo Deer Antlers",
       "deerWhiteDescription": "Kawaii Pink Deer"
+    },
+    "goku": {
+      "name": "Goku",
+      "description": "Super Saiyan hair"
     }
   },
   "serverDrawer": {
