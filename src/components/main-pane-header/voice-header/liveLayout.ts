@@ -1,6 +1,6 @@
 import { createSignal } from "solid-js";
 
-const [showLiveChat, setShowLiveChat] = createSignal(false);
+const [showLiveChat, setShowLiveChat] = createSignal(true);
 
 export { showLiveChat, setShowLiveChat };
 
