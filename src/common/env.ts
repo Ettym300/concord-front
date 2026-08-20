@@ -63,7 +63,7 @@ export default {
   },
   get NERIMITY_CDN() {
     const configured = withSlash(str("VITE_NERIMITY_CDN"));
-    if (import.meta.env.DEV) return configured;
+    if (configured) return configured;
     if (typeof window !== "undefined") return withSlash(window.location.origin);
     return configured;
   },
