@@ -25,6 +25,7 @@ import RouterEndpoints from "@/common/RouterEndpoints";
 import { useMatch, useNavigate, useParams } from "solid-navigator";
 import { VoiceUser, cachedVolumes, setCachedVolumes } from "@/chat-api/store/useVoiceUsers";
 import { t } from "@nerimity/i18lite";
+import { StorageKeys, useLocalStorage } from "@/common/localStorage";
 
 const [showParticipants, setShowParticipants] = createSignal(true);
 type VoiceViewMode = "gallery" | "focus";
@@ -38,6 +39,38 @@ const [floatPos, setFloatPos] = createSignal<{
 
 export function VoiceHeader(props: { channelId?: string; floating?: boolean }) {
   let headerRef: HTMLDivElement | undefined;
+  const [stageHeight, setStageHeight] = useLocalStorage(
+    StorageKeys.voiceStageHeight,
+    320
+  );
+
+  const clampStageHeight = (px: number) => {
+    const min = 180;
+    const max = Math.max(min, window.innerHeight - 200);
+    return Math.round(Math.max(min, Math.min(max, px)));
+  };
+
+  const startStageResize = (event: PointerEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const startY = event.clientY;
+    const startHeight =
+      headerRef?.getBoundingClientRect().height ?? stageHeight();
+    const onMove = (moveEvent: PointerEvent) => {
+      setStageHeight(clampStageHeight(startHeight + (moveEvent.clientY - startY)));
+    };
+    const onUp = () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+    document.body.style.cursor = "ns-resize";
+    document.body.style.userSelect = "none";
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  };
+
   createEffect(() => {
     if (!showParticipants() && headerRef) {
       headerRef.style.height = "";
@@ -156,6 +189,14 @@ export function VoiceHeader(props: { channelId?: string; floating?: boolean }) {
           conditionalClass(!showParticipants(), style.miniView),
           conditionalClass(props.floating, style.floating)
         )}
+        style={
+          !props.floating && isSomeoneVideoStreaming() && showParticipants()
+            ? {
+                height: `${clampStageHeight(stageHeight())}px`,
+                "min-height": "180px"
+              }
+            : undefined
+        }
       >
         <Show when={showParticipants() || props.floating}>
           <div class={style.top}>
@@ -221,6 +262,14 @@ export function VoiceHeader(props: { channelId?: string; floating?: boolean }) {
               </div>
             </Show>
           </div>
+        </Show>
+        <Show when={!props.floating && isSomeoneVideoStreaming() && showParticipants()}>
+          <button
+            type="button"
+            class={style.stageResizeHandle}
+            title={t("mainPaneHeader.voice.resizeLive")}
+            onPointerDown={startStageResize}
+          />
         </Show>
         <Show when={!props.floating}>
           <VoiceActions

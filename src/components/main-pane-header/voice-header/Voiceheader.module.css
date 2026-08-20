@@ -29,11 +29,13 @@
   &.videoStream {
     display: flex;
     overflow: hidden;
-    height: calc(100dvh - var(--header-height) - 168px);
-    min-height: 360px;
+    height: auto;
+    min-height: 180px;
+    max-height: calc(100dvh - var(--header-height) - 88px);
     padding-right: 0;
     padding-left: 0;
     background-color: var(--pane-color);
+    resize: none;
     .voiceParticipants {
       align-self: flex-start;
       flex-direction: column;
@@ -448,6 +450,28 @@
         height: 4px;
       }
     }
+  }
+  .stageResizeHandle {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 12px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: ns-resize;
+  }
+  .stageResizeHandle::after {
+    width: 42px;
+    height: 4px;
+    border-radius: 99px;
+    background: rgba(255, 255, 255, 0.32);
+    content: "";
+  }
+  .stageResizeHandle:hover::after {
+    background: rgba(255, 255, 255, 0.55);
   }
   .voiceActions {
     display: flex;

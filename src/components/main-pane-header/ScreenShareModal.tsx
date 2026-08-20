@@ -116,25 +116,32 @@ export function HeavyGameModePicker(props?: { onChange?: (enabled: boolean) => v
   };
 
   return (
-    <>
+    <HeavyGameBlock>
       <Checkbox
         label={t("mainPaneHeader.voice.screenShareModal.heavyGameMode")}
         checked={heavyGame()}
         onChange={onToggle}
-        class={css`
-          margin: 10px 6px 0;
-        `}
       />
-      <BitrateHint
-        class={css`
-          margin: 4px 6px 8px;
-        `}
-      >
+      <BitrateHint>
         {t("mainPaneHeader.voice.screenShareModal.heavyGameModeDescription")}
       </BitrateHint>
-    </>
+    </HeavyGameBlock>
   );
 }
+
+const HeavyGameBlock = styled("div")`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  margin: 8px 0 12px;
+  padding: 10px 12px;
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  gap: 6px;
+`;
 
 const OptionContainer = styled(FlexRow)``;
 
@@ -147,9 +154,15 @@ const BitrateInputRow = styled("div")`
 `;
 
 const BitrateHint = styled(Text)`
+  display: block;
+  width: 100%;
+  max-width: 100%;
   margin-left: 2px;
   opacity: 0.65;
   font-size: 11px;
+  line-height: 1.4;
+  white-space: normal;
+  word-break: break-word;
 `;
 
 const ActionButtonsContainer = styled(FlexRow)`
@@ -460,12 +473,17 @@ const getFPS = () => {
   });
 };
 
-const SourcesContainer = styled(FlexRow)`
-  display: flex;
-  flex-wrap: wrap;
-  width: 670px;
+const SourcesContainer = styled("div")`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  width: 100%;
+  max-width: 100%;
+  height: min(38vh, 360px);
+  margin-top: 8px;
+  padding: 4px 0 8px;
   overflow: auto;
-  height: 40vh;
+  gap: 10px;
+  box-sizing: border-box;
 `;
 
 function ElectronCaptureSourceList(props: { ref: any }) {
@@ -515,23 +533,21 @@ function ElectronCaptureSourceList(props: { ref: any }) {
 
 const SourceItemContainer = styled(FlexColumn)<{ selected?: boolean }>`
   align-items: center;
-  width: 200px;
-  background-color: rgba(255, 255, 255, 0.1);
-  margin: 10px;
-  border-radius: 8px;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
   overflow: hidden;
+  border: 2px solid
+    ${(props) =>
+      props.selected ? "var(--primary-color)" : "transparent"};
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.1);
   cursor: pointer;
   user-select: none;
-  ${(props) =>
-    props.selected
-      ? `
-    background-color: var(--primary-color);
-  `
-      : undefined}
 `;
 const SourceItemImage = styled("img")`
-  height: 150px;
   width: 100%;
+  height: 96px;
   background-color: black;
   object-fit: contain;
 `;

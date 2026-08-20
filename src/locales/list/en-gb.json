@@ -1154,6 +1154,7 @@
       "stopWatchingLive": "Hide this live",
       "hiddenLives": "Hidden lives",
       "fullscreen": "Fullscreen",
+      "resizeLive": "Drag to resize live",
       "webcamModal": {
         "title": "Webcam Share",
         "error": "Failed to share camera",
@@ -1170,7 +1171,7 @@
         "bitrateHint": "Type a value in Mbps (0.25 to 8).",
         "bitrateHeavyGameHint": "Heavy game mode caps live at {{max}} Mbps.",
         "heavyGameMode": "Heavy game mode",
-        "heavyGameModeDescription": "Encodes live on CPU/RAM instead of the GPU. Best when the game already uses most of your graphics card. Prefer sharing the game window only.",
+        "heavyGameModeDescription": "Uses CPU/RAM for encoding so the GPU stays free for the game. Share the game window only.",
         "changeTitle": "Change Live Screen"
       },
       "liveControls": {

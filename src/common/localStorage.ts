@@ -30,6 +30,7 @@ export const StorageKeys = {
   voiceInputGain: "voiceInputGain",
   voiceLiveBitrate: "voiceLiveBitrate",
   voiceLiveHeavyGameMode: "voiceLiveHeavyGameMode",
+  voiceStageHeight: "voiceStageHeight",
   voiceUseTurnServers: "useTurnServers",
   PTTBoundKeys: "pttBoundKeys",
   USE_TWITTER_EMBED: "useTwitterEmbed",
