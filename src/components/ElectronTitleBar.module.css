@@ -1,7 +1,9 @@
 .nerimityLogo {
-  height: 20px;
+  height: 22px;
+  width: 22px;
   margin-left: 10px;
-  background-color: rgb(38, 38, 38);
+  border-radius: 6px;
+  object-fit: cover;
   pointer-events: none;
 }
 
