@@ -43,4 +43,4 @@ export const appLogoUrl = () => {
   return "/assets/logo.png";
 };
 
-export const appLogoMarkUrl = () => "/assets/logo-mark.png";
+export const appLogoMarkUrl = () => "/assets/logo-mark.png?v=comcord";

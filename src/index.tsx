@@ -54,7 +54,12 @@ import env from "./common/env";
 import DevTestRoutes from "./test";
 
 if ("serviceWorker" in navigator) {
-  if (!env.DEV_MODE) {
+  const isElectron = navigator.userAgent.toLowerCase().includes("electron");
+  if (isElectron) {
+    void navigator.serviceWorker.getRegistrations?.().then((regs) => {
+      for (const reg of regs) void reg.unregister();
+    });
+  } else if (!env.DEV_MODE) {
     window.addEventListener("load", () => {
       navigator.serviceWorker
         .register("/sw.js", { scope: "/" })

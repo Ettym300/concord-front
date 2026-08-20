@@ -7,7 +7,7 @@ import { createSignal } from "solid-js";
 export function ElectronTitleBar() {
   return (
     <div class={style.barContainer}>
-      <img class={style.nerimityLogo} src="/assets/logo-mark.png" />
+      <img class={style.nerimityLogo} src="/assets/logo-mark.png?v=comcord" />
       <span class={style.nerimityTitle}>Concord</span>
       <div class={style.windowControlButtonsContainer}>
         <CopyLinkButton />
