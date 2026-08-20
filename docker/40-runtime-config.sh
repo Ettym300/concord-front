@@ -5,6 +5,9 @@ json_quote() {
   printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
 }
 
+BUILD_ID="$(date +%s)"
+printf '%s\n' "$BUILD_ID" > /usr/share/nginx/html/build-id.txt
+
 cat > /usr/share/nginx/html/runtime-config.js <<EOF
 window.__CONCORD_ENV__ = {
   VITE_SERVER_URL: "$(json_quote "${VITE_SERVER_URL:-}")",
@@ -17,7 +20,8 @@ window.__CONCORD_ENV__ = {
   VITE_TURNSTILE_SITEKEY: "$(json_quote "${VITE_TURNSTILE_SITEKEY:-}")",
   VITE_EMOJI_URL: "$(json_quote "${VITE_EMOJI_URL:-}")",
   VITE_OFFICIAL_SERVER: "$(json_quote "${VITE_OFFICIAL_SERVER:-concord}")",
-  VITE_EMAIL_CONFIRMATION_ENABLED: "$(json_quote "${VITE_EMAIL_CONFIRMATION_ENABLED:-false}")"
+  VITE_EMAIL_CONFIRMATION_ENABLED: "$(json_quote "${VITE_EMAIL_CONFIRMATION_ENABLED:-false}")",
+  VITE_BUILD_ID: "$(json_quote "${BUILD_ID}")"
 };
 EOF
 
@@ -83,6 +87,15 @@ server {
     add_header Cache-Control "no-store";
   }
 
+  location = /build-id.txt {
+    add_header Cache-Control "no-store";
+    add_header Content-Type "text/plain";
+  }
+
+  location = /index.html {
+    add_header Cache-Control "no-store";
+  }
+
 ${API_PROXY}
 
 ${CDN_PROXY}
@@ -91,6 +104,7 @@ ${WS_PROXY}
 
   location / {
     try_files \$uri \$uri/ /index.html;
+    add_header Cache-Control "no-store";
   }
 }
 EOF

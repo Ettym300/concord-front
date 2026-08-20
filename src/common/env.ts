@@ -67,6 +67,9 @@ export default {
     if (typeof window !== "undefined") return withSlash(window.location.origin);
     return configured;
   },
+  get BUILD_ID() {
+    return str("VITE_BUILD_ID");
+  },
   get OFFICIAL_SERVER() {
     return str("VITE_OFFICIAL_SERVER", "concord");
   },

@@ -1018,7 +1018,9 @@
         "authenticationError": "Erro de autenticação",
         "authenticating": "Autenticando…",
         "inQueue": "Em fila: {{count}} usuário(s) em sua frente",
-        "statusPage": "Página de status"
+        "statusPage": "Página de status",
+        "updateAvailable": "Uma atualização do Concord está pronta.",
+        "reloadNow": "Atualizar agora"
     },
     "dangerousLinkModal": {
         "title": "Link customizado",

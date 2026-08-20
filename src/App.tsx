@@ -19,6 +19,7 @@ import ContextMenu, {
   ContextMenuItem
 } from "./components/ui/context-menu/ContextMenu";
 import { Delay } from "./common/Delay";
+import FrontUpdateBanner from "@/components/FrontUpdateBanner";
 
 const ConnectingStatusHeader = lazy(
   () => import("@/components/connecting-status-header/ConnectingStatusHeader")
@@ -74,6 +75,7 @@ export default function App() {
 
   return (
     <>
+      <FrontUpdateBanner />
       <Show when={electronWindowAPI()?.isElectron && !customTitlebarDisabled()}>
         <ElectronTitleBar />
       </Show>
