@@ -42,3 +42,5 @@ export const appLogoUrl = () => {
   // if (isChristmas) return "/assets/christmas-logo.png";
   return "/assets/logo.png";
 };
+
+export const appLogoMarkUrl = () => "/assets/logo-mark.png";

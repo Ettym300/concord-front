@@ -9,7 +9,7 @@ import {
 import LegacyModal from "../ui/legacy-modal/LegacyModal";
 import Button from "../ui/Button";
 import { css, styled } from "solid-styled-components";
-import { FlexColumn, FlexRow } from "../ui/Flexbox";
+import { FlexRow } from "../ui/Flexbox";
 import Text from "../ui/Text";
 import useStore from "@/chat-api/store/useStore";
 import { ElectronCaptureSource, electronWindowAPI } from "@/common/Electron";
@@ -531,11 +531,13 @@ function ElectronCaptureSourceList(props: { ref: any }) {
   );
 }
 
-const SourceItemContainer = styled(FlexColumn)<{ selected?: boolean }>`
-  align-items: center;
+const SourceItemContainer = styled("button")<{ selected?: boolean }>`
+  position: relative;
+  display: block;
   width: 100%;
   min-width: 0;
   margin: 0;
+  padding: 0;
   overflow: hidden;
   border: 2px solid
     ${(props) =>
@@ -546,19 +548,27 @@ const SourceItemContainer = styled(FlexColumn)<{ selected?: boolean }>`
   user-select: none;
 `;
 const SourceItemImage = styled("img")`
+  display: block;
   width: 100%;
-  height: 96px;
+  height: 110px;
   background-color: black;
   object-fit: contain;
 `;
-const SourceText = styled(Text)`
-  word-break: break-word;
-  white-space: pre-line;
-  padding: 5px;
-  flex-shrink: 0;
-  margin-top: auto;
-  margin-bottom: auto;
-  text-align: center;
+const SourceText = styled("span")`
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 18px 8px 8px;
+  overflow: hidden;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.88));
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
 function SourceItem(props: {
@@ -566,10 +576,19 @@ function SourceItem(props: {
   onClick: () => void;
   selected?: boolean;
 }) {
+  const label = () =>
+    props.source.name?.trim() ||
+    (props.source.id.includes("screen") ? "Tela" : "Janela");
+
   return (
-    <SourceItemContainer onClick={props.onClick} selected={props.selected}>
-      <SourceItemImage src={props.source.thumbnailUrl} />
-      <SourceText size={12}>{props.source.name}</SourceText>
+    <SourceItemContainer
+      type="button"
+      onClick={props.onClick}
+      selected={props.selected}
+      title={label()}
+    >
+      <SourceItemImage src={props.source.thumbnailUrl} alt="" />
+      <SourceText>{label()}</SourceText>
     </SourceItemContainer>
   );
 }

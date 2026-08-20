@@ -1,9 +1,9 @@
-import { appLogoUrl } from "@/common/worldEvents";
+import { appLogoMarkUrl } from "@/common/worldEvents";
 
 export const LogoMono = () => {
   return (
     <img
-      src={appLogoUrl()}
+      src={appLogoMarkUrl()}
       alt="Concord"
       draggable={false}
       style={{
