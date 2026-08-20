@@ -59,7 +59,6 @@ import { AdvancedMarkupOptions } from "./advanced-markup-options/AdvancedMarkupO
 import { PostItem } from "./post-area/PostItem";
 import { MetaTitle } from "@/common/MetaTitle";
 import DropDown from "./ui/drop-down/DropDown";
-import { hasBit, USER_BADGES } from "@/chat-api/Bitwise";
 import { Portal } from "solid-js/web";
 import { getSearchUsers } from "@/chat-api/services/UserService";
 import { useSelectedSuggestion } from "@/common/useSelectedSuggestion";
@@ -105,10 +104,8 @@ function NewPostArea(props: {
   postId?: string;
   primaryColor?: string;
 }) {
-  const { posts, account } = useStore();
+  const { posts } = useStore();
 
-  const isSupporter = () =>
-    hasBit(account.user()?.badges || 0, USER_BADGES.SUPPORTER.bit);
   const [content, setContent] = createSignal("");
   const { isPortalOpened } = useCustomPortal();
   const [attachedFile, setAttachedFile] = createSignal<File | undefined>(
@@ -246,7 +243,7 @@ function NewPostArea(props: {
       >
         <Input
           primaryColor={props.primaryColor}
-          maxLength={isSupporter() ? 1500 : 500}
+          maxLength={1500}
           margin={[0, 0, 4, 0]}
           onBlur={() => setTimeout(() => setInputFocused(false), 100)}
           onFocus={() => setTimeout(() => setInputFocused(true), 100)}
@@ -1698,12 +1695,8 @@ const editPostModalStyles = css`
 
 export function EditPostModal(props: { post: Post; close: () => void }) {
   const [content, setContent] = createSignal(props.post.content || "");
-  const store = useStore();
 
   const [textAreaEl, setTextAreaEl] = createSignal<HTMLTextAreaElement>();
-
-  const isSupporter = () =>
-    hasBit(store.account.user()?.badges || 0, USER_BADGES.SUPPORTER.bit);
 
   const onEditClick = () => {
     const formattedContent = formatMessage(content().trim());
@@ -1735,7 +1728,7 @@ export function EditPostModal(props: { post: Post; close: () => void }) {
 
         <Input
           ref={setTextAreaEl}
-          maxLength={isSupporter() ? 1500 : 500}
+          maxLength={1500}
           type="textarea"
           minHeight={40}
           class={css`

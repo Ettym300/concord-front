@@ -1,4 +1,4 @@
-import { Bitwise, USER_BADGES_VALUES } from "@/chat-api/Bitwise";
+import { Bitwise, isPaidUserBadge, USER_BADGES_VALUES } from "@/chat-api/Bitwise";
 import {
   AuditLogType,
   ModerationUser,
@@ -344,7 +344,7 @@ export default function UserPage() {
           </SettingsBlock>
           <SettingsGroup>
             <SettingsBlock icon="badge" label="Badges" />
-            <For each={USER_BADGES_VALUES}>
+            <For each={USER_BADGES_VALUES.filter((badge) => !isPaidUserBadge(badge))}>
               {(badge) => (
                 <BadgeItem
                   badge={badge}

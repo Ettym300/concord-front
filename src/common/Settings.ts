@@ -50,6 +50,7 @@ const settings: Setting[] = [
     routePath: "/badges",
     name: () => t("settings.drawer.badges"),
     icon: "local_police",
+    hide: true,
     element: lazy(() => import("@/components/settings/BadgeSettings"))
   },
   {

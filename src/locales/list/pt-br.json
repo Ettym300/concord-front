@@ -251,7 +251,7 @@
                 "requirements": {
                     "title": "Requisitos",
                     "avatarAndBannerDescription": "Servidor deve ter um avatar e um banner.",
-                    "oneMonthOrSupporterDescription": "Seu servidor deve ter pelo menos 1 mês OU o(a) dono(a) do servidor deve ter o emblema de apoiador(a).",
+                    "oneMonthOrSupporterDescription": "Seu servidor deve ter pelo menos 1 mês.",
                     "englishOnlyDescription": "Servidores que não são em inglês são mais difíceis de moderar.",
                     "rules": "Regras do servidor",
                     "profanityFree": "Livre de profanidade",
@@ -260,7 +260,7 @@
                     "avatarAndBanner": "Avatar e banner",
                     "members": "{{count}} ou mais membros",
                     "membersDescription": "Seu servidor deve ter pelo menos {{count}} membros.",
-                    "oneMonthOrSupporter": "Pelo menos 1 mês OU emblema de apoiador(a)",
+                    "oneMonthOrSupporter": "Pelo menos 1 mês",
                     "rulesDescription": "Servidor deve ter um canal de regras."
                 },
                 "perks": {
