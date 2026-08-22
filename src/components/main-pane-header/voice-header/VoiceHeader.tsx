@@ -35,8 +35,8 @@ const [showParticipants, setShowParticipants] = createSignal(true);
  * essa grade e o MainPane, porque o cabecalho, o palco e as mensagens sao
  * irmaos no DOM.
  */
-const [theaterMode, setTheaterMode] = createSignal(false);
-export { theaterMode };
+const [theaterMode, setTheaterMode] = createSignal(true);
+export { theaterMode, setTheaterMode };
 
 type VoiceViewMode = "gallery" | "focus";
 const [viewMode, setViewMode] = createSignal<VoiceViewMode>("gallery");
@@ -868,14 +868,6 @@ function VoiceActions(props: {
           onClick={() =>
             setViewMode(viewMode() === "gallery" ? "focus" : "gallery")
           }
-        />
-        <Button
-          iconName={theaterMode() ? "fullscreen_exit" : "fullscreen"}
-          color={
-            theaterMode() ? "var(--primary-color)" : "rgba(255,255,255,0.6)"
-          }
-          hoverText={t("mainPaneHeader.voice.theaterMode")}
-          onClick={() => setTheaterMode(!theaterMode())}
         />
       </Show>
       <Show when={!isInCall()}>

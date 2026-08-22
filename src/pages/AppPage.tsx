@@ -360,15 +360,18 @@ function MainPane() {
   useUserNotices();
   applyCustomCss();
 
-  // Estreito demais para duas colunas: ali o palco continua acima do chat.
   const isStreamingHere = () => {
-    const channelId = header.details().channelId;
-    if (!channelId) return false;
+    const details = header.details();
+    // A grade posiciona o painel de mensagens pela classe, entao so vale
+    // quando ele e de fato o painel aberto. Nas outras telas o id nao vem, e
+    // colocar um painel qualquer na coluna do chat quebraria o layout.
+    if (details.id !== "MessagePane" || !details.channelId) return false;
     return voiceUsers
-      .getVoiceUsersByChannelId(channelId)
+      .getVoiceUsersByChannelId(details.channelId)
       .some((voiceUser) => voiceUsers.videoEnabled(voiceUser.userId));
   };
 
+  // Estreito demais para duas colunas: ali o palco continua acima do chat.
   const isTheater = () =>
     theaterMode() && isStreamingHere() && !windowProperties.isMobileWidth();
 
