@@ -378,6 +378,12 @@
     "settings": {
         "drawer": {
             "title": "Configurações",
+            "groups": {
+                "account": "Conta",
+                "app": "Aplicativo",
+                "voice": "Voz e vídeo",
+                "advanced": "Avançado"
+            },
             "account": "Conta",
             "interface": "Interface",
             "language": "Idioma",

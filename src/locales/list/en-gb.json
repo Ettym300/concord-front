@@ -571,6 +571,12 @@
   "settings": {
     "drawer": {
       "title": "Settings",
+      "groups": {
+        "account": "Account",
+        "app": "App",
+        "voice": "Voice & Video",
+        "advanced": "Advanced"
+      },
       "account": "Account",
       "interface": "Interface",
       "language": "Language",
