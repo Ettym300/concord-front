@@ -47,7 +47,7 @@ CDN_UPSTREAM_URL="${CDN_UPSTREAM:-$CDN_URL}"
 CDN_UPSTREAM_URL="${CDN_UPSTREAM_URL%/}"
 CDN_PROXY=""
 if [ -n "$CDN_UPSTREAM_URL" ]; then
-  CDN_PROXY="  location ~ ^/(avatars|profile_banners|attachments|emojis)/ {
+  CDN_PROXY="  location ~ ^/(avatars|profile_banners|attachments|emojis|proxy)/ {
     proxy_pass ${CDN_UPSTREAM_URL};
     proxy_http_version 1.1;
     proxy_set_header Host \$proxy_host;
