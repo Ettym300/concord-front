@@ -1271,6 +1271,7 @@
             "watchLive": "Assistir",
             "stopWatchingLive": "Ocultar esta live",
             "hiddenLives": "Lives ocultas",
+            "theaterMode": "Modo teatro",
             "noLiveSelected": "Nenhuma live selecionada",
             "noLiveSelectedHint": "Escolha abaixo quem você quer assistir",
             "webcamModal": {

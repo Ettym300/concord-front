@@ -1161,6 +1161,7 @@
       "watchLive": "Watch",
       "stopWatchingLive": "Hide this live",
       "hiddenLives": "Hidden lives",
+      "theaterMode": "Theatre mode",
       "noLiveSelected": "No live selected",
       "noLiveSelectedHint": "Pick below who you want to watch",
       "fullscreen": "Fullscreen",

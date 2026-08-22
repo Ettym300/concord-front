@@ -8,7 +8,10 @@ import {
   Show
 } from "solid-js";
 import MainPaneHeader from "../components/main-pane-header/MainPaneHeader";
-import { FloatingLivePreview } from "../components/main-pane-header/voice-header/VoiceHeader";
+import {
+  FloatingLivePreview,
+  theaterMode
+} from "../components/main-pane-header/voice-header/VoiceHeader";
 
 import {
   getStorageString,
@@ -94,6 +97,41 @@ const MainPaneContainer = styled("div")<MainPaneContainerProps>`
     }
 
     scrollbar-width: none; /* Firefox */
+  }
+
+  /*
+   * Modo teatro: o palco da live ocupa o painel e o chat vira a coluna ao
+   * lado, em vez de o video ficar numa faixa acima das mensagens.
+   *
+   * O cabecalho, o palco e o painel de mensagens sao irmaos aqui porque o
+   * MainPaneHeader devolve um fragmento e o ChannelPane usa Switch/Match, que
+   * nao criam elemento. E isso que permite a grade sem mexer nas rotas.
+   */
+  &[data-theater="true"] {
+    display: grid;
+    overflow: hidden;
+    grid-template-areas:
+      "head head"
+      "stage chat";
+    grid-template-columns: minmax(0, 1fr) clamp(260px, 26%, 360px);
+    grid-template-rows: auto minmax(0, 1fr);
+
+    /* Cabecalho e os popovers que ele abre ficam na faixa de cima. */
+    > * {
+      grid-area: head;
+    }
+
+    > .voice-stage {
+      grid-area: stage;
+      min-height: 0;
+      max-height: none;
+    }
+
+    > .messagePane {
+      grid-area: chat;
+      min-width: 0;
+      border-left: var(--panel-border);
+    }
   }
 `;
 
@@ -307,6 +345,7 @@ function LeftDrawer() {
 function MainPane() {
   const windowProperties = useWindowProperties();
   const { hasRightDrawer, hasLeftDrawer } = useDrawer();
+  const { header, voiceUsers } = useStore();
   const [outerPaneElement, setOuterPaneElement] = createSignal<
     HTMLDivElement | undefined
   >(undefined);
@@ -321,6 +360,18 @@ function MainPane() {
   useUserNotices();
   applyCustomCss();
 
+  // Estreito demais para duas colunas: ali o palco continua acima do chat.
+  const isStreamingHere = () => {
+    const channelId = header.details().channelId;
+    if (!channelId) return false;
+    return voiceUsers
+      .getVoiceUsersByChannelId(channelId)
+      .some((voiceUser) => voiceUsers.videoEnabled(voiceUser.userId));
+  };
+
+  const isTheater = () =>
+    theaterMode() && isStreamingHere() && !windowProperties.isMobileWidth();
+
   createEffect(() => {
     windowProperties.setPaneWidth(width());
   });
@@ -334,6 +385,7 @@ function MainPane() {
           style={{ background: windowProperties.paneBackgroundColor() }}
           hasLeftDrawer={hasLeftDrawer()}
           hasRightDrawer={hasRightDrawer()}
+          data-theater={isTheater()}
           class={classNames(
             "main-pane-container",
             conditionalClass(
@@ -344,7 +396,8 @@ function MainPane() {
         >
           <MainPaneHeader />
           <Outlet name="mainPane" />
-          <Show when={!windowProperties.isMobileAgent()}>
+          {/* No teatro o painel nao rola, so as colunas por dentro. */}
+          <Show when={!windowProperties.isMobileAgent() && !isTheater()}>
             <CustomScrollbar
               scrollElement={mainPaneEl()}
               class={css`

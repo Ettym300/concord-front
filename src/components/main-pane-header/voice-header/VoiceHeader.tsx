@@ -28,6 +28,16 @@ import { t } from "@nerimity/i18lite";
 import { StorageKeys, useLocalStorage } from "@/common/localStorage";
 
 const [showParticipants, setShowParticipants] = createSignal(true);
+
+/**
+ * No modo teatro o palco ocupa o painel inteiro e o chat vira uma coluna ao
+ * lado, em vez de o video ficar numa faixa acima das mensagens. Quem monta
+ * essa grade e o MainPane, porque o cabecalho, o palco e as mensagens sao
+ * irmaos no DOM.
+ */
+const [theaterMode, setTheaterMode] = createSignal(false);
+export { theaterMode };
+
 type VoiceViewMode = "gallery" | "focus";
 const [viewMode, setViewMode] = createSignal<VoiceViewMode>("gallery");
 const [floatingViewMode, setFloatingViewMode] =
@@ -39,10 +49,19 @@ const [floatPos, setFloatPos] = createSignal<{
 
 export function VoiceHeader(props: { channelId?: string; floating?: boolean }) {
   let headerRef: HTMLDivElement | undefined;
+  const { isMobileWidth } = useWindowProperties();
   const [stageHeight, setStageHeight] = useLocalStorage(
     StorageKeys.voiceStageHeight,
     320
   );
+
+  /**
+   * No teatro a grade do MainPane manda na altura, entao o palco nao aplica a
+   * altura fixa nem a alca de redimensionar. A condicao acompanha a do
+   * MainPane, que nao monta a grade em largura de celular.
+   */
+  const isTheaterStage = () =>
+    theaterMode() && !props.floating && !isMobileWidth();
 
   const clampStageHeight = (px: number) => {
     const min = 180;
@@ -190,7 +209,10 @@ export function VoiceHeader(props: { channelId?: string; floating?: boolean }) {
           conditionalClass(props.floating, style.floating)
         )}
         style={
-          !props.floating && isSomeoneVideoStreaming() && showParticipants()
+          !props.floating &&
+          !isTheaterStage() &&
+          isSomeoneVideoStreaming() &&
+          showParticipants()
             ? {
                 height: `${clampStageHeight(stageHeight())}px`,
                 "min-height": "180px"
@@ -265,7 +287,14 @@ export function VoiceHeader(props: { channelId?: string; floating?: boolean }) {
             </Show>
           </div>
         </Show>
-        <Show when={!props.floating && isSomeoneVideoStreaming() && showParticipants()}>
+        <Show
+          when={
+            !props.floating &&
+            !isTheaterStage() &&
+            isSomeoneVideoStreaming() &&
+            showParticipants()
+          }
+        >
           <button
             type="button"
             class={style.stageResizeHandle}
@@ -839,6 +868,14 @@ function VoiceActions(props: {
           onClick={() =>
             setViewMode(viewMode() === "gallery" ? "focus" : "gallery")
           }
+        />
+        <Button
+          iconName={theaterMode() ? "fullscreen_exit" : "fullscreen"}
+          color={
+            theaterMode() ? "var(--primary-color)" : "rgba(255,255,255,0.6)"
+          }
+          hoverText={t("mainPaneHeader.voice.theaterMode")}
+          onClick={() => setTheaterMode(!theaterMode())}
         />
       </Show>
       <Show when={!isInCall()}>
