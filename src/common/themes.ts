@@ -38,6 +38,11 @@ const ThemeTokensBase = [
     value: "#0e1016",
     allowGradient: true
   },
+  {
+    key: "panel-border-color",
+    category: ThemeCategory.Surface,
+    value: "rgba(255, 255, 255, 0.055)"
+  },
 
   // Overlays
   {
