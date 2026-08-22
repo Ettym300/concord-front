@@ -1173,7 +1173,7 @@
         "bitrateHint": "Type a value in Mbps (0.25 to 8).",
         "bitrateHeavyGameHint": "Heavy game mode caps live at {{max}} Mbps.",
         "heavyGameMode": "Heavy game mode",
-        "heavyGameModeDescription": "Uses CPU/RAM for encoding so the GPU stays free for the game. Share the game window only.",
+        "heavyGameModeDescription": "Uses the hardware encoder (H.264) and caps at 720p/30fps so the live barely takes performance from the game. Share the game window only.",
         "changeTitle": "Change Live Screen"
       },
       "liveControls": {

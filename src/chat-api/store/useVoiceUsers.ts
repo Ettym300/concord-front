@@ -23,8 +23,9 @@ import { LazySimplePeer } from "@/components/LazySimplePeer";
 import { log } from "@/common/logger";
 import { wrapMicWithNoiseSuppression, preloadNoiseSuppressor, getMicGainLinear } from "@/common/noiseSuppressor";
 import {
-  applyCpuPreferredVideoEncodingToPeer,
+  applyHardwarePreferredVideoEncoding,
   getEffectiveLiveBitrateKbps,
+  getEffectiveLiveFramerate,
   prepareOutgoingVideoTrack
 } from "@/common/liveStreamEncoding";
 
@@ -98,9 +99,14 @@ type StreamWithTracks = {
 export const [cachedVolumes, setCachedVolumes] = createStore<
   Record<string, number>
 >({});
+// watchedLives[streamerUserId] = lives the local user chose to watch.
 const [watchedLives, setWatchedLives] = createStore<Record<string, boolean>>(
   {}
 );
+// liveViewers[viewerUserId] = peers that asked to receive the local user's live.
+// Anyone absent from here gets their video encoding switched off, so a stream
+// costs one encoder per actual viewer instead of one per person in the channel.
+const [liveViewers, setLiveViewers] = createStore<Record<string, boolean>>({});
 export type ConnectionStatus = "CONNECTED" | "DISCONNECTED" | "CONNECTING";
 
 export type VoiceUser = RawVoice & {
@@ -247,6 +253,7 @@ const setCurrentChannelId = (channelId: string | null, reconnect = false) => {
       track.stop();
     });
     setWatchedLives(reconcile({}));
+    setLiveViewers(reconcile({}));
 
     return;
   }
@@ -323,6 +330,8 @@ const removeVoiceUser = (channelId: string, userId: string) => {
     voiceUser.peer?.destroy();
     voiceUser.audio?.remove();
     setVoiceUsers(channelId, userId, undefined);
+    setLiveViewers(userId, false);
+    setWatchedLives(userId, false);
   });
 };
 
@@ -381,6 +390,47 @@ const updateConnectionStatus = (
   }
 };
 
+type LiveWatchMessage = { t: "liveWatch"; watch: boolean };
+
+/**
+ * Sent over the simple-peer data channel, so telling a streamer that we want
+ * their video never touches the signalling server.
+ */
+const sendLiveWatchMessage = (
+  peer: SimplePeer.Instance | undefined,
+  watch: boolean
+) => {
+  if (!peer) return;
+  const payload: LiveWatchMessage = { t: "liveWatch", watch };
+  try {
+    peer.send(JSON.stringify(payload));
+  } catch (err) {
+    log("RTC", "Failed to send live watch state", err);
+  }
+};
+
+const handlePeerData = (voiceUser: VoiceUser, data: unknown) => {
+  let parsed: Partial<LiveWatchMessage>;
+  try {
+    const text =
+      typeof data === "string"
+        ? data
+        : new TextDecoder().decode(data as ArrayBufferView);
+    parsed = JSON.parse(text);
+  } catch {
+    return;
+  }
+  if (parsed?.t !== "liveWatch") return;
+
+  setLiveViewers(voiceUser.userId, !!parsed.watch);
+  log(
+    "RTC",
+    voiceUser.user().username,
+    parsed.watch ? "started watching our live" : "stopped watching our live"
+  );
+  void applyOutgoingVideoBitrate(voiceUser);
+};
+
 const createPeer = (voiceUser: VoiceUser, signal?: SimplePeer.SignalData) => {
   if (!LazySimplePeer) {
     console.log("No LazySimplePeer");
@@ -426,9 +476,18 @@ const createPeer = (voiceUser: VoiceUser, signal?: SimplePeer.SignalData) => {
 
   setVoiceUsers(voiceUser.channelId, voiceUser.userId, "peer", peer);
 
-  peer.on("connect", () => {
+  // Codec preferences only affect the next offer/answer, so this has to run
+  // before simple-peer negotiates (it queues negotiation asynchronously).
+  applyHardwarePreferredVideoEncoding(peerConnection(peer));
+
+  const activePeer = peer;
+
+  activePeer.on("data", (data) => handlePeerData(voiceUser, data));
+
+  activePeer.on("connect", () => {
     log("RTC", "Connected to", voiceUser.user().username + "!");
     updateConnectionStatus(voiceUser, "CONNECTED");
+    sendLiveWatchMessage(activePeer, !!watchedLives[voiceUser.userId]);
     window.setTimeout(() => {
       void applyOutgoingLiveEncoding(voiceUser);
     }, 400);
@@ -696,6 +755,11 @@ const setLiveWatched = (userId: string, watch: boolean) => {
   if (useAccount().user()?.id === userId) return;
   setWatchedLives(userId, watch);
   applyLiveWatch(userId, watch);
+
+  // Ask the streamer to start/stop encoding for us.
+  const current = currentVoiceUser();
+  if (!current) return;
+  sendLiveWatchMessage(getVoiceUser(current.channelId, userId)?.peer, watch);
 };
 
 const toggleLiveWatched = (userId: string) => {
@@ -959,6 +1023,7 @@ const applyOutgoingVideoBitrate = async (voiceUser?: VoiceUser) => {
   const current = currentVoiceUser();
   if (!current?.videoStream) return;
   const maxBitrate = getEffectiveLiveBitrateKbps() * 1000;
+  const maxFramerate = getEffectiveLiveFramerate();
   const targets = voiceUser
     ? [voiceUser]
     : getVoiceUsersByChannelId(current.channelId);
@@ -966,35 +1031,36 @@ const applyOutgoingVideoBitrate = async (voiceUser?: VoiceUser) => {
   for (const user of targets) {
     const pc = peerConnection(user.peer);
     if (!pc) continue;
+    const active = !!liveViewers[user.userId];
     for (const sender of pc.getSenders()) {
       if (sender.track?.kind !== "video") continue;
       try {
         const params = sender.getParameters();
+        // Game capture is high-motion, so shed resolution before frames.
+        (params as any).degradationPreference = "maintain-framerate";
         if (!params.encodings?.length) {
-          params.encodings = [{ maxBitrate }];
-        } else {
-          params.encodings.forEach((encoding) => {
-            encoding.maxBitrate = maxBitrate;
-          });
+          params.encodings = [{}];
         }
+        params.encodings.forEach((encoding) => {
+          // Inactive encodings release the encoder entirely, which is what
+          // keeps a stream from costing one encode per person in the channel.
+          encoding.active = active;
+          encoding.maxBitrate = maxBitrate;
+          if (maxFramerate) {
+            encoding.maxFramerate = maxFramerate;
+          } else {
+            delete encoding.maxFramerate;
+          }
+        });
         await sender.setParameters(params);
       } catch (err) {
-        log("RTC", "Failed to set live bitrate", err);
+        log("RTC", "Failed to apply live encoding", err);
       }
     }
   }
 };
 
 const applyOutgoingLiveEncoding = async (voiceUser?: VoiceUser) => {
-  const current = currentVoiceUser();
-  if (!current?.videoStream) return;
-  const targets = voiceUser
-    ? [voiceUser]
-    : getVoiceUsersByChannelId(current.channelId);
-
-  for (const user of targets) {
-    applyCpuPreferredVideoEncodingToPeer(user.peer);
-  }
   await applyOutgoingVideoBitrate(voiceUser);
 };
 
@@ -1019,6 +1085,9 @@ const addStreamToPeers = (stream: MediaStream) => {
   voiceUsers.forEach((voiceUser) => {
     try {
       voiceUser.peer?.addStream(stream);
+      // simple-peer queues renegotiation asynchronously, so setting codec
+      // preferences here still lands before the offer is created.
+      applyHardwarePreferredVideoEncoding(peerConnection(voiceUser.peer));
     } catch (err) {
       log("RTC", "Failed to add stream to", voiceUser.user().username, err);
     }
@@ -1054,6 +1123,8 @@ function resetAll() {
   batch(() => {
     removeAllPeers();
     // setCurrentVoiceUser(undefined);
+    // Peers re-announce their watch state on reconnect.
+    setLiveViewers(reconcile({}));
 
     if (current) {
       const currentVoiceUser = getVoiceUser(

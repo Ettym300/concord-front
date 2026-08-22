@@ -1281,7 +1281,7 @@
                 "bitrateHint": "Digite um valor em Mbps (0,25 a 8).",
                 "bitrateHeavyGameHint": "Modo jogo pesado limita a live a {{max}} Mbps.",
                 "heavyGameMode": "Modo jogo pesado",
-                "heavyGameModeDescription": "Usa CPU/RAM para a live, liberando a GPU para o jogo. Prefira só a janela do jogo.",
+                "heavyGameModeDescription": "Usa o encoder de hardware (H.264) e limita a 720p/30fps, para a live quase não roubar desempenho do jogo. Prefira só a janela do jogo.",
                 "changeTitle": "Trocar tela da live"
             },
             "liveControls": {
