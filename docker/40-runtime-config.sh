@@ -40,10 +40,15 @@ if [ -n "$API_URL" ]; then
 fi
 
 CDN_URL="${VITE_NERIMITY_CDN%/}"
+# CDN_UPSTREAM lets nginx reach the CDN on a private address while the browser
+# keeps using same-origin paths (VITE_NERIMITY_CDN empty). Falls back to
+# VITE_NERIMITY_CDN so existing deployments behave exactly as before.
+CDN_UPSTREAM_URL="${CDN_UPSTREAM:-$CDN_URL}"
+CDN_UPSTREAM_URL="${CDN_UPSTREAM_URL%/}"
 CDN_PROXY=""
-if [ -n "$CDN_URL" ]; then
+if [ -n "$CDN_UPSTREAM_URL" ]; then
   CDN_PROXY="  location ~ ^/(avatars|profile_banners|attachments|emojis)/ {
-    proxy_pass ${CDN_URL};
+    proxy_pass ${CDN_UPSTREAM_URL};
     proxy_http_version 1.1;
     proxy_set_header Host \$proxy_host;
     proxy_set_header X-Real-IP \$remote_addr;
