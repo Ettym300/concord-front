@@ -1161,6 +1161,8 @@
       "watchLive": "Watch",
       "stopWatchingLive": "Hide this live",
       "hiddenLives": "Hidden lives",
+      "noLiveSelected": "No live selected",
+      "noLiveSelectedHint": "Pick below who you want to watch",
       "fullscreen": "Fullscreen",
       "resizeLive": "Drag to resize live",
       "webcamModal": {

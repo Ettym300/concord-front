@@ -209,22 +209,24 @@ export function VoiceHeader(props: { channelId?: string; floating?: boolean }) {
             </Show>
             <Show when={isSomeoneVideoStreaming() && displayMode() === "gallery"}>
               <div class={style.galleryLayout}>
-                <div
-                  class={style.videoGrid}
-                  style={{
-                    "grid-template-columns": `repeat(${gridColumns()}, minmax(0, 1fr))`
-                  }}
-                >
-                  <For each={visibleStageUsers()}>
-                    {(voiceUser) => (
-                      <VoiceTile
-                        voiceUser={voiceUser!}
-                        selected={voiceUser.userId === selectedUserId()}
-                        onClick={() => onTileClick(voiceUser.userId)}
-                      />
-                    )}
-                  </For>
-                </div>
+                <Show when={visibleStageUsers().length} fallback={<StageEmpty />}>
+                  <div
+                    class={style.videoGrid}
+                    style={{
+                      "grid-template-columns": `repeat(${gridColumns()}, minmax(0, 1fr))`
+                    }}
+                  >
+                    <For each={visibleStageUsers()}>
+                      {(voiceUser) => (
+                        <VoiceTile
+                          voiceUser={voiceUser!}
+                          selected={voiceUser.userId === selectedUserId()}
+                          onClick={() => onTileClick(voiceUser.userId)}
+                        />
+                      )}
+                    </For>
+                  </div>
+                </Show>
                 <HiddenLivesBar
                   users={hiddenLiveUsers()}
                   onWatch={onTileClick}
@@ -233,7 +235,7 @@ export function VoiceHeader(props: { channelId?: string; floating?: boolean }) {
             </Show>
             <Show when={isSomeoneVideoStreaming() && displayMode() === "focus"}>
               <div class={style.stageLayout}>
-                <Show when={selectedVoiceUser()}>
+                <Show when={selectedVoiceUser()} fallback={<StageEmpty />}>
                   <div class={style.stageMain}>
                     <VoiceTile
                       voiceUser={selectedVoiceUser()!}
@@ -279,6 +281,19 @@ export function VoiceHeader(props: { channelId?: string; floating?: boolean }) {
         </Show>
       </div>
     </Show>
+  );
+}
+
+function StageEmpty() {
+  return (
+    <div class={style.stageEmpty}>
+      <div class={style.stageEmptyTitle}>
+        {t("mainPaneHeader.voice.noLiveSelected")}
+      </div>
+      <div class={style.stageEmptyHint}>
+        {t("mainPaneHeader.voice.noLiveSelectedHint")}
+      </div>
+    </div>
   );
 }
 
