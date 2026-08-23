@@ -35,7 +35,7 @@ const [showParticipants, setShowParticipants] = createSignal(true);
  * essa grade e o MainPane, porque o cabecalho, o palco e as mensagens sao
  * irmaos no DOM.
  */
-const [theaterMode, setTheaterMode] = createSignal(true);
+const [theaterMode, setTheaterMode] = createSignal(false);
 export { theaterMode, setTheaterMode };
 
 type VoiceViewMode = "gallery" | "focus";
@@ -162,30 +162,44 @@ export function VoiceHeader(props: { channelId?: string; floating?: boolean }) {
     return 4;
   };
 
+  const hideLiveFromStage = (userId: string) => {
+    if (userId === account.user()?.id) return;
+    voiceUsers.setLiveWatched(userId, false);
+    if (selectedUserId() === userId) {
+      const next = videoStreamingUsers().find(
+        (u) => u.userId !== userId && voiceUsers.isLiveWatched(u.userId)
+      );
+      setSelectedUserId(next?.userId ?? null);
+    }
+    if (displayMode() === "focus") setDisplayMode("gallery");
+  };
+
   const onTileClick = (userId: string) => {
     const isSelf = userId === account.user()?.id;
-    if (
-      voiceUsers.videoEnabled(userId) &&
-      !isSelf &&
-      !voiceUsers.isLiveWatched(userId)
-    ) {
+    const streaming = voiceUsers.videoEnabled(userId);
+
+    // Live oculta / ainda nao assistida: so mostra no palco (da pra clicar de novo depois).
+    if (streaming && !isSelf && !voiceUsers.isLiveWatched(userId)) {
       voiceUsers.setLiveWatched(userId, true);
       setSelectedUserId(userId);
       return;
     }
+
     if (
       displayMode() === "gallery" &&
-      voiceUsers.videoEnabled(userId) &&
+      streaming &&
       voiceUsers.isLiveWatched(userId)
     ) {
       setSelectedUserId(userId);
       setDisplayMode("focus");
       return;
     }
+
     if (displayMode() === "focus" && userId === selectedUserId()) {
       setDisplayMode("gallery");
       return;
     }
+
     setSelectedUserId(userId);
   };
 
@@ -244,6 +258,7 @@ export function VoiceHeader(props: { channelId?: string; floating?: boolean }) {
                           voiceUser={voiceUser!}
                           selected={voiceUser.userId === selectedUserId()}
                           onClick={() => onTileClick(voiceUser.userId)}
+                          onHide={() => hideLiveFromStage(voiceUser.userId)}
                         />
                       )}
                     </For>
@@ -264,6 +279,9 @@ export function VoiceHeader(props: { channelId?: string; floating?: boolean }) {
                       selected
                       large
                       onClick={() => onTileClick(selectedVoiceUser()!.userId)}
+                      onHide={() =>
+                        hideLiveFromStage(selectedVoiceUser()!.userId)
+                      }
                     />
                   </div>
                 </Show>
@@ -275,6 +293,7 @@ export function VoiceHeader(props: { channelId?: string; floating?: boolean }) {
                         selected={voiceUser.userId === selectedUserId()}
                         filmstrip
                         onClick={() => onTileClick(voiceUser.userId)}
+                        onHide={() => hideLiveFromStage(voiceUser.userId)}
                       />
                     )}
                   </For>
@@ -358,6 +377,7 @@ function VoiceTile(props: {
   large?: boolean;
   filmstrip?: boolean;
   onClick?: () => void;
+  onHide?: () => void;
   onDblClick?: () => void;
 }) {
   const { voiceUsers, account } = useStore();
@@ -449,7 +469,8 @@ function VoiceTile(props: {
           title={t("mainPaneHeader.voice.stopWatchingLive")}
           onClick={(event) => {
             event.stopPropagation();
-            voiceUsers.setLiveWatched(props.voiceUser.userId, false);
+            // So tira do palco; fica na barra de ocultas pra clicar e ver de novo.
+            props.onHide?.();
           }}
         >
           <Icon name="visibility_off" size={16} />
