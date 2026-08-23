@@ -57,7 +57,7 @@
     "authenticating": "Authenticating…",
     "connected": "Connected!",
     "statusPage": "Status Page",
-    "updateAvailable": "A new Concord update is ready.",
+    "updateAvailable": "A new HUGIN update is ready.",
     "reloadNow": "Update now"
   },
   "dangerousLinkModal": {
@@ -78,11 +78,11 @@
     "by": "By",
     "deletionNotice": "Your account and data will be deleted in 15 days",
     "ipBanned": "Your IP is banned.",
-    "ipBanNotice": "Someone with the same IP has been suspended from Concord. Your account is not affected."
+    "ipBanNotice": "Someone with the same IP has been suspended from HUGIN. Your account is not affected."
   },
   "homePage": {
     "slogan": "A modern and sleek chat app.",
-    "subslogan": "Concord offers an elegant and feature-rich experience that sets it apart.",
+    "subslogan": "HUGIN offers an elegant and feature-rich experience that sets it apart.",
     "viewGitHubButton": "View on GitHub",
     "getStarted": "Get Started",
     "availableOn": "Available on",
@@ -115,7 +115,7 @@
       "nsfw": "No NSFW content.",
       "age": "You must be 14 or older."
     },
-    "title": "Welcome to Concord",
+    "title": "Welcome to HUGIN",
     "email": "Email",
     "username": "Username",
     "password": "Password",
@@ -141,11 +141,11 @@
     "sending": "Sending Email…"
   },
   "welcomePopup": {
-    "subtitle": "Thanks for trying out Concord!",
-    "joinServer": "Join the official Concord server",
+    "subtitle": "Thanks for trying out HUGIN!",
+    "joinServer": "Join the official HUGIN server",
     "editProfile": "Edit my profile",
     "support": "Support me on {{platform}}",
-    "contribute": "Contribute to Concord on GitHub"
+    "contribute": "Contribute to HUGIN on GitHub"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -266,13 +266,13 @@
     "bots": {
       "title": "Explore - Bots",
       "noticeMessage": "A bot can be bumped once every {{hours}} hours. All bumps reset every {{date}}.",
-      "moderationNotice": "Bots are not moderated by Concord. Please report bots that are malicious or break the TOS.",
+      "moderationNotice": "Bots are not moderated by HUGIN. Please report bots that are malicious or break the TOS.",
       "inviteButton": "Invite",
       "serverCount": "In {{count}} servers"
     },
     "themes": {
       "title": "Explore - Themes",
-      "themesHeaderDescription": "Personalise Concord with a custom theme.",
+      "themesHeaderDescription": "Personalise HUGIN with a custom theme.",
       "officialThemes": "Official Themes",
       "communityThemes": "Community Themes",
       "noCommunityThemes": "No community themes found.",
@@ -282,7 +282,7 @@
     "servers": {
       "title": "Explore - Servers",
       "noticeMessage": "A server can be bumped once every {{hours}} hours. All bumps reset every {{date}}.",
-      "moderationNotice": "Servers are not moderated by Concord. Please report servers that break the TOS.",
+      "moderationNotice": "Servers are not moderated by HUGIN. Please report servers that break the TOS.",
       "sortMostBumps": "Most Bumps",
       "sortMostMembers": "Most Members",
       "sortRecentlyAdded": "Recently Added",
@@ -601,7 +601,7 @@
     "language": {
       "reloadNotice": "You must reload the app to fully apply the new language.",
       "reloadButton": "Reload",
-      "searchNotice": "Translations are maintained by the community. Please report any translations that are incorrect or inappropriate to Concord.",
+      "searchNotice": "Translations are maintained by the community. Please report any translations that are incorrect or inappropriate to HUGIN.",
       "contributors": "Contributors"
     },
     "header": {
@@ -642,7 +642,7 @@
       "deleteAccountDescription": "This cannot be undone!",
       "deleteAccountNotice": "You must leave/delete all servers before you can delete your account.",
       "understoodButton": "Understood",
-      "deletionNotice": "We're sad to see you go :( If you didn't like something, please let us know in the official Concord server.",
+      "deletionNotice": "We're sad to see you go :( If you didn't like something, please let us know in the official HUGIN server.",
       "deletedInfo": {
         "title": "What will get deleted",
         "email": "• Email",
@@ -749,9 +749,14 @@
         "echoCancelation": "Echo Cancellation",
         "echoCancelationDescription": "Prevents the microphone from picking up sound from the speakers.",
         "noiseSuppression": "Noise Suppression",
-        "noiseSuppressionDescription": "Removes background noise (keyboard, fan, room) so others mainly hear your voice.",
+        "noiseSuppressionDescription": "Removes background noise. Enhanced mode uses RNNoise with a compressor for cleaner voice.",
         "autoGainControl": "Auto Gain Control",
         "autoGainControlDescription": "Automatically adjusts volume levels to maintain a consistent signal. Can fight the input volume slider."
+      },
+      "noiseModes": {
+        "disabled": "Disabled",
+        "browser": "Browser",
+        "enhanced": "Enhanced (RNNoise)"
       },
       "inputMode": "Input Mode",
       "openMic": "Open Mic",
@@ -761,7 +766,7 @@
       "stopButton": "Stop",
       "useTurn": "Use Cloudflare TURN Servers",
       "useTurnDescription": "Use TURN servers for better connectivity",
-      "downloadAppNotice": "Download the Concord desktop app to use this feature without window tab focus."
+      "downloadAppNotice": "Download the HUGIN desktop app to use this feature without window tab focus."
     },
     "connections": {
       "thirdParty": {
@@ -774,7 +779,7 @@
         "title": "Using your primary Google account to share or host attachments is not recommended.",
         "message": "Due to the way the Google Drive API handles file metadata, your display name and Google email address are often visible in the background data of any file you share. \n\nUse a throwaway account if you choose to continue using Google Drive."
       },
-      "googleDriveDescription": "Linking your Google account will allow you to upload files in Concord. Files will be stored in your Google Drive.",
+      "googleDriveDescription": "Linking your Google account will allow you to upload files in HUGIN. Files will be stored in your Google Drive.",
       "googleDescription": "Linking your Google account will allow you to login using Google quickly and easily.",
       "linkButton": "Link",
       "unlinkButton": "Unlink"
@@ -816,18 +821,18 @@
       "24HourFormatDescription": "Display time in 24-hour format."
     },
     "window": {
-      "downloadAppNotice": "To modify these settings, you must download the Concord desktop app.",
+      "downloadAppNotice": "To modify these settings, you must download the HUGIN desktop app.",
       "startupOptions": "Startup Options",
-      "openOnStartup": "Open Concord on startup",
+      "openOnStartup": "Open HUGIN on startup",
       "startMinimized": "Start Minimised",
-      "startMinimizedDescription": "Minimise Concord to the tray automatically.",
+      "startMinimizedDescription": "Minimise HUGIN to the tray automatically.",
       "disableHardwareAcceleration": "Disable Hardware Acceleration",
       "disableCustomTitlebar": "Disable Custom Titlebar",
       "reopenAppNotice": "You must reopen the app for the change to take effect."
     },
     "activity": {
       "extension": "Browser Extension",
-      "extensionDescription": "Our RPC extension allows you to share your activity from Spotify and YouTube with users on Concord!",
+      "extensionDescription": "Our RPC extension allows you to share your activity from Spotify and YouTube with users on HUGIN!",
       "visitButton": "Visit {{store}}",
       "activityStatus": "Activity Status",
       "activityStatusDescription": "Share what you're up to with everyone",
@@ -839,7 +844,7 @@
         "emoji": "Emoji"
       },
       "discordActivity": "Discord Activity",
-      "discordActivityDescription": "Share your Discord activity with users on Concord",
+      "discordActivityDescription": "Share your Discord activity with users on HUGIN",
       "idPlaceholder": "Discord User ID",
       "serverModal": {
         "text": "Please join the Discord server to enable Activity Sharing.",
@@ -852,9 +857,9 @@
     },
     "developer": {
       "useLatestUrl": "Use Latest URL",
-      "useLatestUrlDescription": "Load the latest Concord URL on next app restart. Will relaunch app.",
+      "useLatestUrlDescription": "Load the latest HUGIN URL on next app restart. Will relaunch app.",
       "useLatestUrlWarning": "It may be unstable or buggy.",
-      "applicationsDescription": "Create Concord Bots.",
+      "applicationsDescription": "Create HUGIN Bots.",
       "apiDocumentation": "API Documentation (incomplete)",
       "addButton": "Add App",
       "name": "Application Name",
@@ -904,7 +909,7 @@
       "noExperiments": "There are currently no experiments available.",
       "reloadRequired": {
         "title": "Reload Required",
-        "body": "Concord needs to be restarted for changes to take effect.",
+        "body": "HUGIN needs to be restarted for changes to take effect.",
         "restartNow": "Restart Now",
         "restartLater": "Restart Later"
       }
@@ -992,7 +997,8 @@
         "changeNickname": "Change Nickname",
         "transferOwnership": "Transfer Ownership",
         "callVolume": "Call Volume",
-        "userVolume": "User Volume"
+        "userVolume": "User Volume",
+        "liveVolume": "Live volume"
     },
   "emojiModal": {
     "title": "Emoji",
@@ -1174,15 +1180,27 @@
       "screenShareModal": {
         "title": "Screen Share",
         "quality": "Quality",
-        "framerate": "Framerate",
+        "videoQuality": "Video Quality",
+        "framerate": "Frame Rate",
+        "sourceQuality": "Source",
+        "shareAudio": "Share Audio",
         "shareSystemAudio": "Share System Audio",
         "shareAppAudio": "Share App Audio",
+        "startSharing": "Start Sharing",
+        "preventEcho": "Prevent application echo",
+        "screenSource": "Screen",
+        "windowSource": "Window",
         "chooseWindowButton": "Choose Window",
         "bitrate": "Bitrate",
         "bitrateHint": "Type a value in Mbps (0.25 to 8).",
+        "bitrateSfuHint": "Server limit: up to {{max}} Mbps (protects SFU bandwidth).",
         "bitrateHeavyGameHint": "Heavy game mode caps live at {{max}} Mbps.",
         "heavyGameMode": "Heavy game mode",
         "heavyGameModeDescription": "Uses the hardware encoder (H.264) and caps at 720p/30fps so the live barely takes performance from the game. Share the game window only.",
+        "sfuQualityHint": "1080p and 60fps are disabled on the SFU server to protect bandwidth.",
+        "preset480": "Saves bandwidth — better for weaker connections.",
+        "preset720": "Balance between quality and server load.",
+        "preset1080": "Highest quality — uses more bandwidth.",
         "changeTitle": "Change Live Screen"
       },
       "liveControls": {
@@ -1209,7 +1227,7 @@
         "header": "Sort by",
         "member": "Member",
         "joined": "Joined",
-        "joinedNerimity": "Joined Concord"
+        "joinedHUGIN": "Joined HUGIN"
       },
       "order": {
         "header": "Order by",
@@ -1279,10 +1297,10 @@
       "videoModified": "Video was modified.",
       "couldNotGetVideo": "Could not get video.",
       "modifiedOrDeleted": "This video was modified/deleted by the creator in their Google Drive.",
-      "googleDrivePolicy": "Due to new Google Drive policy, you can only play videos from the Concord Desktop App."
+      "googleDrivePolicy": "Due to new Google Drive policy, you can only play videos from the HUGIN Desktop App."
     },
     "audioEmbed": {
-      "googleDrivePolicy": "Due to new Google Drive policy, you can only play audio from the Concord Desktop App."
+      "googleDrivePolicy": "Due to new Google Drive policy, you can only play audio from the HUGIN Desktop App."
     }
   },
   "addFriendModal": {
@@ -1392,15 +1410,15 @@
     },
     "founder": {
       "name": "Founder",
-      "description": "Creator of Concord"
+      "description": "Creator of HUGIN"
     },
     "admin": {
       "name": "Admin",
-      "description": "Admin of Concord"
+      "description": "Admin of HUGIN"
     },
     "mod": {
       "name": "Moderator",
-      "description": "Moderator of Concord"
+      "description": "Moderator of HUGIN"
     },
     "supporter": {
       "name": "Supporter",
