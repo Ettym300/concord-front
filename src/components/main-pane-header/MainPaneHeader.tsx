@@ -258,7 +258,13 @@ export default function MainPaneHeader() {
       <Show when={showPinsList()}>
         <PinsListPopup close={() => setShowPinsList(false)} />
       </Show>
-      <VoiceHeader channelId={header.details().channelId} />
+      {/*
+        So monta o palco na rota do canal. Em Configuracoes/outras telas o
+        channelId pode ficar stale no header e o stage (z-index alto) cobre tudo.
+      */}
+      <Show when={isMessages() && header.details().channelId}>
+        <VoiceHeader channelId={header.details().channelId} />
+      </Show>
     </>
   );
 }

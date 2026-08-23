@@ -542,7 +542,7 @@
 
 .floatingLive {
   position: fixed;
-  z-index: 120000;
+  z-index: 40;
   right: 16px;
   bottom: 16px;
   width: min(380px, calc(100vw - 24px));
@@ -612,7 +612,7 @@
 
 .floatingLiveChip {
   position: fixed;
-  z-index: 120000;
+  z-index: 40;
   right: 16px;
   bottom: 16px;
   display: flex;

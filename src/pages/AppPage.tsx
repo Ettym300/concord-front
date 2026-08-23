@@ -358,6 +358,9 @@ function MainPane() {
   );
 
   const { width } = useResizeObserver(outerPaneElement);
+  const onInbox = useMatch(() => "/app/inbox/:id");
+  const onServerChannel = useMatch(() => "/app/servers/:serverId/:channelId");
+  const onMessageRoute = () => !!onInbox() || !!onServerChannel();
 
   useServerRedirect();
   useUserNotices();
@@ -369,6 +372,8 @@ function MainPane() {
     // quando ele e de fato o painel aberto. Nas outras telas o id nao vem, e
     // colocar um painel qualquer na coluna do chat quebraria o layout.
     if (details.id !== "MessagePane" || !details.channelId) return false;
+    // Teatro so no canal: em Configuracoes o stage nao pode montar a grade.
+    if (!onMessageRoute()) return false;
     return voiceUsers
       .getVoiceUsersByChannelId(details.channelId)
       .some((voiceUser) => voiceUsers.videoEnabled(voiceUser.userId));
