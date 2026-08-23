@@ -477,6 +477,75 @@
     display: flex;
     flex-shrink: 0;
   }
+
+  .stageEmpty {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 0;
+    padding: 20px;
+    gap: 6px;
+    color: var(--content-color-dim60);
+    text-align: center;
+  }
+
+  .stageEmptyTitle {
+    color: var(--content-color);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .stageEmptyHint {
+    font-size: 12px;
+  }
+
+  /*
+   * Barra de controles flutuando sobre o video, no lugar da barra no fluxo.
+   *
+   * Fica de fora quando o palco esta recolhido (miniView), porque ali esta
+   * barra e o unico caminho para expandir de novo: escondê-la atras do hover
+   * deixaria o palco sem volta.
+   */
+  &.videoStream:not(.miniView) .voiceActions {
+    position: absolute;
+    z-index: 5;
+    bottom: 14px;
+    left: 50%;
+    padding: 6px;
+    border: 1px solid var(--panel-border-color);
+    border-radius: 26px;
+    background: var(--call-bar-background-color);
+    box-shadow: var(--panel-shadow);
+    opacity: 0;
+    transform: translateX(-50%) translateY(6px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    pointer-events: none;
+  }
+
+  &.videoStream:not(.miniView):hover .voiceActions,
+  &.videoStream:not(.miniView):focus-within .voiceActions {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+  }
+
+  /* Abre espaco para a barra flutuante nao cobrir os tiles da bandeja. */
+  &.videoStream:not(.miniView) .hiddenLives {
+    padding-bottom: 68px;
+  }
+}
+
+/* Sem hover em toque, a barra tem de ficar sempre visivel. */
+:global .mobileAgent {
+  :local {
+    .headerVoiceParticipants.videoStream:not(.miniView) .voiceActions {
+      opacity: 1;
+      transform: translateX(-50%);
+      pointer-events: auto;
+    }
+  }
 }
 
 .floatingLive {

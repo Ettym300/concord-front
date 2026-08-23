@@ -378,6 +378,12 @@
     "settings": {
         "drawer": {
             "title": "Configurações",
+            "groups": {
+                "account": "Conta",
+                "app": "Aplicativo",
+                "voice": "Voz e vídeo",
+                "advanced": "Avançado"
+            },
             "account": "Conta",
             "interface": "Interface",
             "language": "Idioma",
@@ -1265,6 +1271,9 @@
             "watchLive": "Assistir",
             "stopWatchingLive": "Ocultar esta live",
             "hiddenLives": "Lives ocultas",
+            "theaterMode": "Modo teatro",
+            "noLiveSelected": "Nenhuma live selecionada",
+            "noLiveSelectedHint": "Escolha abaixo quem você quer assistir",
             "webcamModal": {
                 "title": "Compartilhamento de webcam",
                 "error": "Não foi possível compartilhar a câmera",
