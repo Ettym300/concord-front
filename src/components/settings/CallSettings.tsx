@@ -24,12 +24,23 @@ import Checkbox from "../ui/Checkbox";
 import Block from "../ui/settings-block/Block";
 import { VoiceMicPreview } from "./VoiceMicPreview";
 import { preloadNoiseSuppressor } from "@/common/noiseSuppressor";
+import {
+  NoiseSuppressionMode,
+  VoiceMicConstraints,
+  resolveNoiseSuppressionMode
+} from "@/common/voiceAudioSettings";
 
 const Container = styled("div")`
   display: flex;
   flex-direction: column;
   gap: 5px;
   padding: 10px;
+`;
+
+const NoiseModeSettingsBlock = styled(SettingsBlock)`
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
 `;
 
 export default function CallSettings() {
@@ -63,10 +74,10 @@ interface AvailableConstraint {
   label: string;
   description?: string;
   icon: string;
-  key: "echo" | "noise" | "gain";
+  key: "echo" | "gain";
   default: boolean;
 }
-type ModifiableConstraints = "echo" | "noise" | "gain";
+type ModifiableConstraints = "echo" | "gain";
 export function InputDevices() {
   const { voiceUsers } = useStore();
   const [devices, setDevices] = createSignal<MediaDeviceInfo[]>([]);
@@ -95,15 +106,6 @@ export function InputDevices() {
         key: "echo",
         default: true
       });
-    supportedList.push({
-      label: t("settings.call.inputConstraints.noiseSuppression"),
-      description: t(
-        "settings.call.inputConstraints.noiseSuppressionDescription"
-      ),
-      icon: "noise_aware",
-      key: "noise",
-      default: true
-    });
     if (supported.autoGainControl)
       supportedList.push({
         label: t("settings.call.inputConstraints.autoGainControl"),
@@ -149,11 +151,18 @@ export function InputDevices() {
 
   const [constraints, setConstraints] = useLocalStorage(
     StorageKeys.voiceMicConstraints,
-    { echo: true, noise: true, gain: true } as Record<
-      ModifiableConstraints,
-      boolean
-    >
+    { echo: true, gain: true, noiseMode: "enhanced" } as VoiceMicConstraints
   );
+
+  const noiseMode = () => resolveNoiseSuppressionMode(constraints());
+
+  const setNoiseMode = (mode: NoiseSuppressionMode) => {
+    setConstraints({
+      ...constraints(),
+      noiseMode: mode
+    });
+    void voiceUsers.restartMic();
+  };
 
   return (
     <SettingsGroup>
@@ -171,8 +180,38 @@ export function InputDevices() {
       </SettingsBlock>
       <VoiceMicPreview
         inputDeviceId={inputDeviceId()}
-        constraints={constraints()}
+        constraints={{
+          echo: constraints().echo,
+          gain: constraints().gain,
+          noiseMode: noiseMode()
+        }}
       />
+      <NoiseModeSettingsBlock
+        icon="noise_aware"
+        label={t("settings.call.inputConstraints.noiseSuppression")}
+        description={t(
+          "settings.call.inputConstraints.noiseSuppressionDescription"
+        )}
+      >
+        <RadioBox
+          items={[
+            {
+              id: "disabled",
+              label: t("settings.call.noiseModes.disabled")
+            },
+            {
+              id: "browser",
+              label: t("settings.call.noiseModes.browser")
+            },
+            {
+              id: "enhanced",
+              label: t("settings.call.noiseModes.enhanced")
+            }
+          ]}
+          initialId={noiseMode()}
+          onChange={(item) => setNoiseMode(item.id as NoiseSuppressionMode)}
+        />
+      </NoiseModeSettingsBlock>
       <For each={supportedConstraints()}>
         {(constraint) => (
           <CheckboxOption
@@ -183,11 +222,7 @@ export function InputDevices() {
                 ...constraints(),
                 [constraint.key]: val
               });
-              if (constraint.key === "noise") {
-                void voiceUsers.restartMic();
-              } else {
-                void voiceUsers.applyMicConstraints();
-              }
+              void voiceUsers.applyMicConstraints();
             }}
           />
         )}

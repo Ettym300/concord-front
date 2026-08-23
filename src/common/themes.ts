@@ -310,7 +310,7 @@ export const themePresets: Record<string, ThemePreset> = {
     colors: DefaultTheme,
     maintainers: ["Superkitten", "Asraye"]
   },
-  Concord: {
+  Hugin: {
     colors: DefaultTheme,
     maintainers: ["local"]
   },

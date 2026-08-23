@@ -23,7 +23,7 @@ import { CustomLink } from "@/components/ui/CustomLink";
 import MemberContextMenu from "@/components/member-context-menu/MemberContextMenu";
 import RouterEndpoints from "@/common/RouterEndpoints";
 import { useMatch, useNavigate, useParams } from "solid-navigator";
-import { VoiceUser, cachedVolumes, setCachedVolumes } from "@/chat-api/store/useVoiceUsers";
+import { VoiceUser, cachedLiveVolumes, setCachedLiveVolumes } from "@/chat-api/store/useVoiceUsers";
 import { t } from "@nerimity/i18lite";
 import { StorageKeys, useLocalStorage } from "@/common/localStorage";
 
@@ -470,28 +470,19 @@ function VideoStream(props: {
   large?: boolean;
 }) {
   let videoEl: HTMLVideoElement | undefined;
-  const { voiceUsers } = useStore();
 
   const [playing, setPlaying] = createSignal(false);
 
-  const voiceUser = () => {
-    const channelId = voiceUsers.currentUser()?.channelId;
-    if (!channelId || !props.userId) return undefined;
-    return voiceUsers.getVoiceUser(channelId, props.userId);
-  };
-
-  const volume = () =>
-    props.userId ? (cachedVolumes[props.userId] ?? 1) : 1;
-  const isVolumeMuted = () => volume() === 0;
+  const liveVolume = () =>
+    props.userId ? (cachedLiveVolumes[props.userId] ?? 1) : 1;
+  const isVolumeMuted = () => liveVolume() === 0;
   const showVolumeControls = () => !props.mute && !!props.userId;
   const showFullscreen = () => !props.filmstrip;
 
   const applyVolume = (next: number) => {
     const clamped = Math.max(0, Math.min(1, next));
     if (!props.userId) return;
-    setCachedVolumes(props.userId, clamped);
-    const audio = voiceUser()?.audio;
-    if (audio) audio.volume = clamped;
+    setCachedLiveVolumes(props.userId, clamped);
     if (videoEl) videoEl.volume = clamped;
   };
 
@@ -502,18 +493,16 @@ function VideoStream(props: {
   createEffect(() => {
     const userId = props.userId;
     if (!userId) return;
-    const vol = cachedVolumes[userId] ?? 1;
-    const audio = voiceUser()?.audio;
-    if (audio && audio.volume !== vol) audio.volume = vol;
+    const vol = cachedLiveVolumes[userId] ?? 1;
     if (videoEl && videoEl.volume !== vol) videoEl.volume = vol;
   });
 
   createEffect(
     on(
-      () => voiceUser()?.audio,
-      (audio) => {
-        if (!audio || !props.userId) return;
-        audio.volume = cachedVolumes[props.userId] ?? 1;
+      () => props.mediaStream,
+      () => {
+        if (!videoEl || !playing()) return;
+        videoEl.volume = liveVolume();
       }
     )
   );
@@ -529,7 +518,7 @@ function VideoStream(props: {
       .then(() => {
         setPlaying(true);
         el.muted = props.mute || false;
-        el.volume = volume();
+        el.volume = liveVolume();
       })
       .catch(() => {});
   };
@@ -582,7 +571,7 @@ function VideoStream(props: {
       if (!el.paused && el.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
         setPlaying(true);
         el.muted = !!props.mute;
-        el.volume = volume();
+        el.volume = liveVolume();
         window.clearInterval(interval);
         return;
       }
@@ -642,7 +631,7 @@ function VideoStream(props: {
                 min={0}
                 max={1}
                 step={0.01}
-                value={volume()}
+                value={liveVolume()}
                 onInput={(event) => {
                   applyVolume(Number(event.currentTarget.value));
                 }}

@@ -29,6 +29,8 @@ export const StorageKeys = {
   voiceInputSensitivity: "voiceInputSensitivity",
   voiceInputGain: "voiceInputGain",
   voiceLiveBitrate: "voiceLiveBitrate",
+  voiceLiveQuality: "voiceLiveQuality",
+  voiceLiveFramerate: "voiceLiveFramerate",
   voiceLiveHeavyGameMode: "voiceLiveHeavyGameMode",
   voiceStageHeight: "voiceStageHeight",
   voiceUseTurnServers: "useTurnServers",
