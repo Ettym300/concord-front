@@ -22,7 +22,6 @@ export type LiveQuality =
   | "720p"
   | "1080p"
   | "1440p"
-  | "4k"
   | "source";
 
 export type LiveFramerate = 15 | 24 | 30 | 60;
@@ -35,7 +34,6 @@ export const LIVE_QUALITY_OPTIONS: readonly LiveQuality[] = [
   "720p",
   "1080p",
   "1440p",
-  "4k",
   "source"
 ] as const;
 
@@ -62,7 +60,6 @@ export function getBitrateForQuality(quality: LiveQuality) {
       "720p": 2000,
       "1080p": 2500,
       "1440p": 2500,
-      "4k": 2500,
       source: 2500
     };
     return clampLiveBitrateKbps(map[quality]);
@@ -72,7 +69,6 @@ export function getBitrateForQuality(quality: LiveQuality) {
     "720p": 2500,
     "1080p": 4500,
     "1440p": 6000,
-    "4k": 8000,
     source: 2500
   };
   return clampLiveBitrateKbps(map[quality]);
@@ -166,8 +162,6 @@ export function getLiveQualityDimensions(quality: LiveQuality) {
       return { width: 1920, height: 1080 };
     case "1440p":
       return { width: 2560, height: 1440 };
-    case "4k":
-      return { width: 3840, height: 2160 };
     case "source":
       return { width: window.screen.width, height: window.screen.height };
     default:

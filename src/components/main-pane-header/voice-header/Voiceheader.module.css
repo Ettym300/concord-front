@@ -518,16 +518,8 @@
     border-radius: 26px;
     background: var(--call-bar-background-color);
     box-shadow: var(--panel-shadow);
-    opacity: 0;
-    transform: translateX(-50%) translateY(6px);
-    transition: opacity 0.2s ease, transform 0.2s ease;
-    pointer-events: none;
-  }
-
-  &.videoStream:not(.miniView):hover .voiceActions,
-  &.videoStream:not(.miniView):focus-within .voiceActions {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    transform: translateX(-50%);
     pointer-events: auto;
   }
 

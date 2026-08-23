@@ -122,6 +122,9 @@ const MainPaneContainer = styled("div")<MainPaneContainerProps>`
     }
 
     > .voice-stage {
+      position: relative;
+      top: auto;
+      z-index: 1;
       grid-area: stage;
       min-height: 0;
       max-height: none;

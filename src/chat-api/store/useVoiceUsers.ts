@@ -350,11 +350,7 @@ async function connectLiveKitToChannel(channelId: string) {
         setLivePublishers(userId, true);
         const voiceUser = getVoiceUser(channelId, userId);
         if (voiceUser) updateConnectionStatus(voiceUser, "CONNECTED");
-        // Auto-watch the first live if none selected.
-        if (!Object.values(watchedLives).some(Boolean)) {
-          setWatchedLives(userId, true);
-          setLiveKitScreenShareSubscribed(userId, true);
-        } else if (watchedLives[userId]) {
+        if (watchedLives[userId]) {
           setLiveKitScreenShareSubscribed(userId, true);
         }
       },
