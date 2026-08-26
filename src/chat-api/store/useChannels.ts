@@ -240,7 +240,16 @@ async function joinCall(this: Channel, reconnect = false) {
     }
   }
   postJoinVoice(this.id, socketClient.id()!).then(() => {
-    if (reconnect) return;
+    if (reconnect) {
+      // WS reconnect may have raced with voice:left and dropped LiveKit.
+      // If we're still meant to be in this call, ensure LiveKit is up.
+      if (!env.LIVEKIT_ENABLED) return;
+      const voice = useVoiceUsers();
+      if (voice.currentUser()?.channelId === this.id) return;
+      // currentVoiceUser was cleared — must use reconnect=false so it is set again
+      setCurrentChannelId(this.id, false);
+      return;
+    }
     setCurrentChannelId(this.id, reconnect);
     this.setCallJoinedAt(Date.now());
   });
